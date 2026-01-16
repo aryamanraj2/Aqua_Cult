@@ -8,7 +8,7 @@ struct DashboardView: View {
     @State private var environmentalData = EnvironmentalData.sample
     @State private var showingAddTank = false
     @State private var showingWeatherDetails = false
-    @State private var showingVoiceBot = false
+    @State private var showingProfile = false
     @Namespace private var namespace
 
     var body: some View {
@@ -118,18 +118,17 @@ struct DashboardView: View {
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button {
-                        showingVoiceBot = true
+                        showingProfile = true
                     } label: {
-                        Image(systemName: "mic.circle.fill")
+                        Image(systemName: "person.circle.fill")
                             .font(.title3)
                             .foregroundColor(.oceanBlue)
                     }
-                    .matchedTransitionSource(id: "voiceBotTransition", in: namespace)
                     .onBoarding(1) {
                         TutorialContentView(
-                            title: localizationManager.localizedString(for: "voice_assistant"),
-                            description: localizationManager.localizedString(for: "voice_assistant_desc"),
-                            icon: "mic.fill"
+                            title: localizationManager.localizedString(for: "profile"),
+                            description: localizationManager.localizedString(for: "profile_desc"),
+                            icon: "person.fill"
                         )
                     }
                 }
@@ -141,13 +140,13 @@ struct DashboardView: View {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }
-            .sheet(isPresented: $showingVoiceBot) {
-                VoiceBotView()
+            .sheet(isPresented: $showingProfile) {
+                ProfileSheetView()
                     .environmentObject(tankManager)
-                    .environmentObject(cartManager)
-                    .presentationDetents([.large])
+                    .environmentObject(profileManager)
+                    .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
-                    .navigationTransition(.zoom(sourceID: "voiceBotTransition", in: namespace))
+                    .presentationCornerRadius(24)
             }
             .sheet(isPresented: $showingWeatherDetails) {
                 WeatherDetailsView(environmentalData: environmentalData)

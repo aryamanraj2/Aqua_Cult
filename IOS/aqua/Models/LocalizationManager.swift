@@ -72,6 +72,10 @@ class LocalizationManager: ObservableObject {
         "tab_disease": "Disease",
         "tab_market": "Market",
         "tab_profile": "Profile",
+        "tab_voice": "AquaBot",
+        
+        // Profile descriptions
+        "profile_desc": "Access your profile settings and preferences.",
 
         // Dashboard
         "active_tanks": "Active Tanks",
@@ -204,6 +208,10 @@ class LocalizationManager: ObservableObject {
         "tab_disease": "रोग",
         "tab_market": "बाज़ार",
         "tab_profile": "प्रोफ़ाइल",
+        "tab_voice": "एक्वाबॉट",
+        
+        // Profile descriptions
+        "profile_desc": "अपनी प्रोफ़ाइल सेटिंग्स और प्राथमिकताएं एक्सेस करें।",
 
         // Dashboard
         "active_tanks": "सक्रिय टैंक",
@@ -336,6 +344,10 @@ class LocalizationManager: ObservableObject {
         "tab_disease": "রোগ",
         "tab_market": "বাজার",
         "tab_profile": "প্রোফাইল",
+        "tab_voice": "অ্যাকোয়াবট",
+        
+        // Profile descriptions
+        "profile_desc": "আপনার প্রোফাইল সেটিংস এবং পছন্দ অ্যাক্সেস করুন।",
 
         // Dashboard
         "active_tanks": "সক্রিয় ট্যাঙ্ক",

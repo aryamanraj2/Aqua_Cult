@@ -600,6 +600,233 @@ struct LanguageOptionButton: View {
     }
 }
 
+// MARK: - Profile Sheet View (Apple-style bottom sheet drawer)
+struct ProfileSheetView: View {
+    @EnvironmentObject var tankManager: TankManager
+    @EnvironmentObject var profileManager: UserProfileManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+    @Environment(\.dismiss) private var dismiss
+    @State private var showingSettings = false
+    @State private var showingEditProfile = false
+    @State private var showingLanguagePicker = false
+    
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Compact Profile Header
+                    compactProfileHeader
+                    
+                    // Quick Stats
+                    quickStatsSection
+                    
+                    // Settings List
+                    settingsListSection
+                }
+                .padding(.bottom, 40)
+            }
+            .background(
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.subtleBlueLight, Color.subtleBlueMid]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .navigationTitle(localizationManager.localizedString(for: "profile"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showingEditProfile = true
+                    } label: {
+                        Text(localizationManager.localizedString(for: "edit"))
+                            .fontWeight(.medium)
+                            .foregroundColor(.oceanBlue)
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showingEditProfile) {
+            EditProfileView(profile: $profileManager.profile)
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
+        }
+        .sheet(isPresented: $showingLanguagePicker) {
+            LanguagePickerView()
+        }
+    }
+    
+    // MARK: - Compact Profile Header
+    private var compactProfileHeader: some View {
+        HStack(spacing: 16) {
+            // Profile Image
+            ZStack {
+                Circle()
+                    .fill(Color.oceanBlue.opacity(0.1))
+                    .frame(width: 70, height: 70)
+                
+                Image(systemName: "person.fill")
+                    .font(.system(size: 28))
+                    .foregroundColor(.oceanBlue)
+            }
+            .overlay(
+                Circle()
+                    .stroke(Color.oceanBlue, lineWidth: 2)
+            )
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(profileManager.profile.fullName)
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Text(profileManager.profile.mobile)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                
+                Text(profileManager.profile.location)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+    }
+    
+    // MARK: - Quick Stats Section
+    private var quickStatsSection: some View {
+        HStack(spacing: 12) {
+            SheetStatCard(
+                icon: "fish.fill",
+                value: "\(tankManager.tankCount)",
+                label: localizationManager.localizedString(for: "active_tanks"),
+                color: .oceanBlue
+            )
+            
+            SheetStatCard(
+                icon: "drop.fill",
+                value: String(format: "%.1f", tankManager.totalVolume) + "m³",
+                label: localizationManager.localizedString(for: "total_volume"),
+                color: .blue
+            )
+            
+            SheetStatCard(
+                icon: "calendar",
+                value: "\(profileManager.profile.experienceYears)",
+                label: localizationManager.localizedString(for: "years_experience"),
+                color: .green
+            )
+        }
+        .padding(.horizontal, 20)
+    }
+    
+    // MARK: - Settings List Section
+    private var settingsListSection: some View {
+        VStack(spacing: 0) {
+            // Language Selection Row
+            LanguageSettingsRow(
+                icon: "globe",
+                title: localizationManager.localizedString(for: "language"),
+                currentLanguage: localizationManager.currentLanguage
+            ) {
+                showingLanguagePicker = true
+            }
+            
+            Divider()
+                .padding(.leading, 60)
+            
+            SettingsRow(
+                icon: "gear.circle.fill",
+                title: localizationManager.localizedString(for: "app_settings"),
+                subtitle: localizationManager.localizedString(for: "preferences_config")
+            ) {
+                showingSettings = true
+            }
+            
+            Divider()
+                .padding(.leading, 60)
+            
+            SettingsRow(
+                icon: "questionmark.circle.fill",
+                title: localizationManager.localizedString(for: "help_support"),
+                subtitle: localizationManager.localizedString(for: "faqs_contact")
+            ) {
+                // Handle help action
+            }
+            
+            Divider()
+                .padding(.leading, 60)
+            
+            SettingsRow(
+                icon: "info.circle.fill",
+                title: localizationManager.localizedString(for: "about_aqua"),
+                subtitle: "Version \(profileManager.profile.appVersion)"
+            ) {
+                // Handle about action
+            }
+            
+            Divider()
+                .padding(.leading, 60)
+            
+            SettingsRow(
+                icon: "rectangle.portrait.and.arrow.right",
+                title: localizationManager.localizedString(for: "sign_out"),
+                subtitle: localizationManager.localizedString(for: "log_out_account"),
+                isDestructive: true
+            ) {
+                // Handle sign out
+            }
+        }
+        .background(Color.white.opacity(0.8))
+        .cornerRadius(16)
+        .shadow(color: .black.opacity(0.05), radius: 8, y: 2)
+        .padding(.horizontal, 20)
+    }
+}
+
+// MARK: - Sheet Stat Card (Compact for bottom sheet)
+struct SheetStatCard: View {
+    let icon: String
+    let value: String
+    let label: String
+    let color: Color
+    
+    var body: some View {
+        VStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 20))
+                .foregroundColor(color)
+            
+            Text(value)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(.primary)
+            
+            Text(label)
+                .font(.system(size: 10))
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(color.opacity(0.1))
+        .cornerRadius(12)
+    }
+}
+
 // MARK: - Data Model
 
 #Preview {
@@ -608,4 +835,10 @@ struct LanguageOptionButton: View {
             .environmentObject(TankManager())
             .environmentObject(UserProfileManager())
     }
+}
+
+#Preview("ProfileSheetView") {
+    ProfileSheetView()
+        .environmentObject(TankManager())
+        .environmentObject(UserProfileManager())
 }

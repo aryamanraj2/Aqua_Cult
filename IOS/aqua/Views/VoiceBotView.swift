@@ -8,176 +8,170 @@
 import SwiftUI
 
 struct VoiceBotView: View {
-    @Environment(\.dismiss) private var dismiss
     @StateObject private var voiceBotManager = VoiceBotManager()
     @EnvironmentObject private var tankManager: TankManager
     @EnvironmentObject private var cartManager: CartManager
     @State private var backgroundOffset: CGFloat = 0
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                // Liquid glass background
-                LiquidGlassBackground(offset: backgroundOffset)
-                    .ignoresSafeArea()
-                
-                VStack(spacing: 0) {
-                    // Status bar (compact)
-                    if voiceBotManager.isRecording || voiceBotManager.isProcessing || voiceBotManager.isSpeaking {
-                        HStack(spacing: 12) {
-                            // Animated indicator
-                            ZStack {
-                                Circle()
-                                    .fill(.white.opacity(0.2))
-                                    .frame(width: 32, height: 32)
-                                
-                                if voiceBotManager.isRecording {
-                                    Image(systemName: "waveform")
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundStyle(.white)
-                                        .symbolEffect(.variableColor.iterative.reversing, options: .repeating)
-                                } else if voiceBotManager.isProcessing {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                        .scaleEffect(0.8)
-                                } else if voiceBotManager.isSpeaking {
-                                    Image(systemName: "speaker.wave.2.fill")
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundStyle(.cyan)
-                                        .symbolEffect(.variableColor.iterative.reversing, options: .repeating)
-                                }
-                            }
-                            
-                            // Status text
-                            VStack(alignment: .leading, spacing: 2) {
-                                if voiceBotManager.isRecording {
-                                    Text("Listening...")
-                                        .font(.system(size: 15, weight: .semibold))
-                                        .foregroundStyle(.white)
-                                    
-                                    if !voiceBotManager.currentTranscript.isEmpty {
-                                        Text(voiceBotManager.currentTranscript)
-                                            .font(.system(size: 12, weight: .regular))
-                                            .foregroundStyle(.white.opacity(0.7))
-                                            .lineLimit(1)
-                                    }
-                                } else if voiceBotManager.isProcessing {
-                                    Text("Thinking...")
-                                        .font(.system(size: 15, weight: .semibold))
-                                        .foregroundStyle(.white)
-                                } else if voiceBotManager.isSpeaking {
-                                    Text("Speaking...")
-                                        .font(.system(size: 15, weight: .semibold))
-                                        .foregroundStyle(.cyan)
-                                }
-                            }
-                            
-                            Spacer()
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
-                        .background(.ultraThinMaterial)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                    }
+        ZStack {
+            // Liquid glass background
+            LiquidGlassBackground(offset: backgroundOffset)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                // Header with title - respects safe area for notch
+                VStack(spacing: 8) {
+                    Text("AquaBot")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
                     
-                    // Chat conversation
-                    if voiceBotManager.conversationHistory.isEmpty && !voiceBotManager.isRecording {
-                        // Empty state
-                        VStack(spacing: 20) {
-                            Spacer()
+                    Text("Your AI Fish Farming Assistant")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.6))
+                }
+                .padding(.top, 8)
+                .padding(.bottom, 16)
+                
+                // Status bar (compact)
+                if voiceBotManager.isRecording || voiceBotManager.isProcessing || voiceBotManager.isSpeaking {
+                    HStack(spacing: 12) {
+                        // Animated indicator
+                        ZStack {
+                            Circle()
+                                .fill(.white.opacity(0.2))
+                                .frame(width: 32, height: 32)
                             
-                            Image(systemName: "waveform.circle.fill")
-                                .font(.system(size: 60, weight: .thin))
-                                .foregroundStyle(.white.opacity(0.7))
-                                .symbolEffect(.pulse, options: .repeating)
-                            
-                            VStack(spacing: 8) {
-                                Text("AquaBot")
-                                    .font(.system(size: 32, weight: .thin, design: .rounded))
+                            if voiceBotManager.isRecording {
+                                Image(systemName: "waveform")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundStyle(.white)
+                                    .symbolEffect(.variableColor.iterative.reversing, options: .repeating)
+                            } else if voiceBotManager.isProcessing {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .scaleEffect(0.8)
+                            } else if voiceBotManager.isSpeaking {
+                                Image(systemName: "speaker.wave.2.fill")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundStyle(.cyan)
+                                    .symbolEffect(.variableColor.iterative.reversing, options: .repeating)
+                            }
+                        }
+                        
+                        // Status text
+                        VStack(alignment: .leading, spacing: 2) {
+                            if voiceBotManager.isRecording {
+                                Text("Listening...")
+                                    .font(.system(size: 15, weight: .semibold))
                                     .foregroundStyle(.white)
                                 
-                                Text("Tap to speak")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundStyle(.white.opacity(0.6))
+                                if !voiceBotManager.currentTranscript.isEmpty {
+                                    Text(voiceBotManager.currentTranscript)
+                                        .font(.system(size: 12, weight: .regular))
+                                        .foregroundStyle(.white.opacity(0.7))
+                                        .lineLimit(1)
+                                }
+                            } else if voiceBotManager.isProcessing {
+                                Text("Thinking...")
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundStyle(.white)
+                            } else if voiceBotManager.isSpeaking {
+                                Text("Speaking...")
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundStyle(.cyan)
                             }
-                            
-                            Spacer()
                         }
-                        .transition(.opacity)
-                    } else {
-                        // Message list
-                        ImprovedConversationView(
-                            messages: voiceBotManager.conversationHistory,
-                            isProcessing: voiceBotManager.isProcessing,
-                            cartManager: cartManager,
-                            voiceBotManager: voiceBotManager
-                        )
-                    }
-
-                    // Error display
-                    if let error = voiceBotManager.error {
-                        HStack(spacing: 12) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundStyle(.red)
-                            Text(error)
-                                .font(.caption)
-                                .foregroundStyle(.white)
-                            Spacer()
-                            Button("Dismiss") {
-                                voiceBotManager.error = nil
+                        
+                        Spacer()
+                        
+                        // Clear conversation button
+                        if !voiceBotManager.conversationHistory.isEmpty {
+                            Button {
+                                withAnimation(.smooth(duration: 0.4)) {
+                                    voiceBotManager.clearConversation()
+                                }
+                            } label: {
+                                Image(systemName: "arrow.counterclockwise")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: 32, height: 32)
+                                    .background(.ultraThinMaterial)
+                                    .clipShape(Circle())
                             }
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.cyan)
                         }
-                        .padding()
-                        .background(.red.opacity(0.2))
-                        .cornerRadius(12)
-                        .padding(.horizontal)
                     }
-
-                    // Voice control button
-                    LiquidRecordButton(
-                        isRecording: voiceBotManager.isRecording,
-                        isProcessing: voiceBotManager.isProcessing,
-                        action: { handleRecordingAction() }
-                    )
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 16)
-                }
-            }
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.hidden, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 32, height: 32)
-                            .background(.ultraThinMaterial)
-                            .clipShape(Circle())
-                    }
+                    .padding(.vertical, 12)
+                    .background(.ultraThinMaterial)
+                    .transition(.move(edge: .top).combined(with: .opacity))
                 }
                 
-                if !voiceBotManager.conversationHistory.isEmpty {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            withAnimation(.smooth(duration: 0.4)) {
-                                voiceBotManager.clearConversation()
-                            }
-                        } label: {
-                            Image(systemName: "arrow.counterclockwise")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(.white)
-                                .frame(width: 32, height: 32)
-                                .background(.ultraThinMaterial)
-                                .clipShape(Circle())
+                // Chat conversation
+                if voiceBotManager.conversationHistory.isEmpty && !voiceBotManager.isRecording {
+                    // Empty state
+                    VStack(spacing: 20) {
+                        Spacer()
+                        
+                        Image(systemName: "waveform.circle.fill")
+                            .font(.system(size: 80, weight: .thin))
+                            .foregroundStyle(.white.opacity(0.7))
+                            .symbolEffect(.pulse, options: .repeating)
+                        
+                        VStack(spacing: 8) {
+                            Text("Tap to speak")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundStyle(.white.opacity(0.6))
+                            
+                            Text("Ask about water quality, feeding schedules,\nor get product recommendations")
+                                .font(.system(size: 14, weight: .regular))
+                                .foregroundStyle(.white.opacity(0.4))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 40)
                         }
+                        
+                        Spacer()
                     }
+                    .transition(.opacity)
+                } else {
+                    // Message list
+                    ImprovedConversationView(
+                        messages: voiceBotManager.conversationHistory,
+                        isProcessing: voiceBotManager.isProcessing,
+                        cartManager: cartManager,
+                        voiceBotManager: voiceBotManager
+                    )
                 }
+
+                // Error display
+                if let error = voiceBotManager.error {
+                    HStack(spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.red)
+                        Text(error)
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                        Spacer()
+                        Button("Dismiss") {
+                            voiceBotManager.error = nil
+                        }
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.cyan)
+                    }
+                    .padding()
+                    .background(.red.opacity(0.2))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+                }
+
+                // Voice control button
+                LiquidRecordButton(
+                    isRecording: voiceBotManager.isRecording,
+                    isProcessing: voiceBotManager.isProcessing,
+                    action: { handleRecordingAction() }
+                )
+                .padding(.horizontal, 20)
+                .padding(.bottom, 24)
             }
         }
         .onAppear {

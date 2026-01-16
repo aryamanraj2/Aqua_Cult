@@ -42,13 +42,12 @@ struct ContentView: View {
                     Label(localizationManager.localizedString(for: "tab_market"), systemImage: "cart.fill")
                 }
 
-                NavigationStack {
-                    ProfileView()
-                        .environmentObject(tankManager)
-                        .environmentObject(profileManager)
-                }
+                // Voice Bot - Hero Feature Tab
+                VoiceBotView()
+                    .environmentObject(tankManager)
+                    .environmentObject(cartManager)
                 .tabItem {
-                    Label(localizationManager.localizedString(for: "tab_profile"), systemImage: "person.fill")
+                    Label(localizationManager.localizedString(for: "tab_voice"), systemImage: "waveform.circle.fill")
                 }
             }
             .tint(.oceanBlue)
