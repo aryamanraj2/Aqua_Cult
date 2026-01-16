@@ -47,10 +47,24 @@ struct DashboardView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                     .padding(.horizontal)
+                    .onBoarding(2) {
+                        TutorialContentView(
+                            title: "Environmental Conditions",
+                            description: "Monitor real-time weather and environmental data affecting your tanks.",
+                            icon: "thermometer.sun.fill"
+                        )
+                    }
                     
                     // Water Quality Metrics Grid
                     WaterQualityMetricsView()
                         .padding(.horizontal)
+                        .onBoarding(3) {
+                            TutorialContentView(
+                                title: "Tank Health Metrics",
+                                description: "Track water quality parameters like pH, oxygen, and salinity at a glance.",
+                                icon: "waveform.path.ecg"
+                            )
+                        }
                     
                     // My Tanks Section
                     VStack(spacing: 16) {
@@ -109,6 +123,13 @@ struct DashboardView: View {
                                 .foregroundColor(.oceanBlue)
                         }
                         .matchedTransitionSource(id: "newTankTransition", in: namespace)
+                    }
+                    .onBoarding(1) {
+                        TutorialContentView(
+                            title: "Voice & Add Tank",
+                            description: "Use the microphone for voice commands or tap the plus to add a new tank.",
+                            icon: "mic.and.plus"
+                        )
                     }
                 }
             }
