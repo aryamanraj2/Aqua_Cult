@@ -7,6 +7,7 @@ struct ProfileView: View {
     @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var showingSettings = false
     @State private var showingEditProfile = false
+    @State private var showingLanguagePicker = false
 
     var body: some View {
         ScrollView {
@@ -46,6 +47,9 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
+        }
+        .sheet(isPresented: $showingLanguagePicker) {
+            LanguagePickerView()
         }
     }
     
@@ -140,6 +144,18 @@ struct ProfileView: View {
                 .padding(.horizontal)
 
             VStack(spacing: 0) {
+                // Language Selection Row
+                LanguageSettingsRow(
+                    icon: "globe",
+                    title: localizationManager.localizedString(for: "language"),
+                    currentLanguage: localizationManager.currentLanguage
+                ) {
+                    showingLanguagePicker = true
+                }
+
+                Divider()
+                    .padding(.leading, 60)
+
                 SettingsRow(
                     icon: "gear.circle.fill",
                     title: localizationManager.localizedString(for: "app_settings"),
@@ -418,6 +434,169 @@ struct SettingsView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Language Settings Row
+struct LanguageSettingsRow: View {
+    let icon: String
+    let title: String
+    let currentLanguage: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundColor(.oceanBlue)
+                    .frame(width: 24)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.primary)
+
+                    Text(currentLanguage)
+                        .font(.caption)
+                        .foregroundColor(.oceanBlue)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 12)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Language Picker View
+struct LanguagePickerView: View {
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+
+    let languages = [
+        ("English", "English", "🇺🇸"),
+        ("हिन्दी", "Hindi", "🇮🇳"),
+        ("বাংলা", "Bengali", "🇧🇩")
+    ]
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 0) {
+                // Header
+                VStack(spacing: 8) {
+                    Image(systemName: "globe")
+                        .font(.system(size: 50))
+                        .foregroundColor(.oceanBlue)
+                        .padding(.top, 30)
+
+                    Text(localizationManager.localizedString(for: "choose_language"))
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.deepOcean)
+
+                    Text(localizationManager.localizedString(for: "select_preferred_language"))
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .padding(.bottom, 20)
+                }
+
+                // Language Options
+                VStack(spacing: 12) {
+                    ForEach(languages, id: \.0) { language in
+                        LanguageOptionButton(
+                            nativeName: language.0,
+                            englishName: language.1,
+                            flag: language.2,
+                            isSelected: localizationManager.currentLanguage == language.0
+                        ) {
+                            withAnimation(.spring(response: 0.3)) {
+                                localizationManager.setLanguage(language.0)
+                            }
+                            // Dismiss after a short delay to show the selection
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                dismiss()
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, 24)
+
+                Spacer()
+            }
+            .background(
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.subtleBlueLight, Color.white]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(localizationManager.localizedString(for: "done")) {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Language Option Button
+struct LanguageOptionButton: View {
+    let nativeName: String
+    let englishName: String
+    let flag: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                Text(flag)
+                    .font(.system(size: 32))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(nativeName)
+                        .font(.headline)
+                        .foregroundColor(isSelected ? .oceanBlue : .primary)
+
+                    Text(englishName)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.oceanBlue)
+                } else {
+                    Circle()
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 2)
+                        .frame(width: 24, height: 24)
+                }
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(isSelected ? Color.oceanBlue.opacity(0.1) : Color.white)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(isSelected ? Color.oceanBlue : Color.gray.opacity(0.2), lineWidth: isSelected ? 2 : 1)
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
 

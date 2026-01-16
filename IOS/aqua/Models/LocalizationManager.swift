@@ -100,6 +100,8 @@ class LocalizationManager: ObservableObject {
 
         // Profile
         "profile": "Profile",
+        "language": "Language",
+        "change_language": "Change app language",
         "my_aquaculture": "My Aquaculture",
         "years_experience": "Years Experience",
         "settings_info": "Settings & Info",
@@ -230,6 +232,8 @@ class LocalizationManager: ObservableObject {
 
         // Profile
         "profile": "प्रोफ़ाइल",
+        "language": "भाषा",
+        "change_language": "ऐप की भाषा बदलें",
         "my_aquaculture": "मेरी जलीय कृषि",
         "years_experience": "वर्षों का अनुभव",
         "settings_info": "सेटिंग्स और जानकारी",
@@ -360,6 +364,8 @@ class LocalizationManager: ObservableObject {
 
         // Profile
         "profile": "প্রোফাইল",
+        "language": "ভাষা",
+        "change_language": "অ্যাপের ভাষা পরিবর্তন করুন",
         "my_aquaculture": "আমার মৎস্যচাষ",
         "years_experience": "বছরের অভিজ্ঞতা",
         "settings_info": "সেটিংস ও তথ্য",
