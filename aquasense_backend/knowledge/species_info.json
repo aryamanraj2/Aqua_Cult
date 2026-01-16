@@ -1,0 +1,270 @@
+{
+  "species": [
+    {
+      "id": "tilapia",
+      "common_name": "Tilapia",
+      "scientific_name": "Oreochromis niloticus",
+      "category": "freshwater",
+      "optimal_parameters": {
+        "temperature": {
+          "min": 25,
+          "max": 30,
+          "optimal": 28,
+          "unit": "°C"
+        },
+        "ph": {
+          "min": 6.5,
+          "max": 9.0,
+          "optimal": 7.5
+        },
+        "dissolved_oxygen": {
+          "min": 4.0,
+          "optimal": 6.0,
+          "unit": "mg/L"
+        },
+        "ammonia": {
+          "max": 0.5,
+          "unit": "mg/L"
+        },
+        "salinity": {
+          "tolerance": "0-15 ppt"
+        }
+      },
+      "tank_requirements": {
+        "minimum_size": "100 liters per fish",
+        "stocking_density": "10-20 kg/m³",
+        "depth": "minimum 1 meter"
+      },
+      "feeding": {
+        "type": "omnivore",
+        "protein_requirement": "28-35%",
+        "feeding_rate": "3-5% body weight per day",
+        "frequency": "2-3 times daily",
+        "feed_types": ["commercial pellets", "natural plankton", "vegetable matter"]
+      },
+      "growth": {
+        "market_size": "300-500 grams",
+        "growth_period": "6-8 months",
+        "daily_gain": "2-3 grams per day"
+      },
+      "common_diseases": [
+        "Streptococcosis",
+        "Columnaris",
+        "Ich",
+        "Fungal infections"
+      ],
+      "notes": "Hardy species, tolerant of poor water quality, fast growth, excellent for beginners"
+    },
+    {
+      "id": "catfish",
+      "common_name": "African Catfish",
+      "scientific_name": "Clarias gariepinus",
+      "category": "freshwater",
+      "optimal_parameters": {
+        "temperature": {
+          "min": 26,
+          "max": 32,
+          "optimal": 28,
+          "unit": "°C"
+        },
+        "ph": {
+          "min": 6.5,
+          "max": 8.5,
+          "optimal": 7.0
+        },
+        "dissolved_oxygen": {
+          "min": 3.0,
+          "optimal": 5.0,
+          "unit": "mg/L"
+        },
+        "ammonia": {
+          "max": 1.0,
+          "unit": "mg/L"
+        }
+      },
+      "tank_requirements": {
+        "minimum_size": "50 liters per fish",
+        "stocking_density": "20-50 kg/m³",
+        "depth": "minimum 0.8 meter"
+      },
+      "feeding": {
+        "type": "carnivore/omnivore",
+        "protein_requirement": "35-45%",
+        "feeding_rate": "3-5% body weight per day",
+        "frequency": "2 times daily",
+        "feed_types": ["high-protein pellets", "fish meal", "blood worms"]
+      },
+      "growth": {
+        "market_size": "800-1200 grams",
+        "growth_period": "6-7 months",
+        "daily_gain": "4-6 grams per day"
+      },
+      "common_diseases": [
+        "Bacterial infections",
+        "Parasitic infections",
+        "Fungal infections"
+      ],
+      "notes": "Very hardy, can breathe air, tolerates low oxygen, aggressive feeder"
+    },
+    {
+      "id": "salmon",
+      "common_name": "Atlantic Salmon",
+      "scientific_name": "Salmo salar",
+      "category": "cold_water",
+      "optimal_parameters": {
+        "temperature": {
+          "min": 8,
+          "max": 16,
+          "optimal": 12,
+          "unit": "°C"
+        },
+        "ph": {
+          "min": 6.5,
+          "max": 8.0,
+          "optimal": 7.0
+        },
+        "dissolved_oxygen": {
+          "min": 7.0,
+          "optimal": 9.0,
+          "unit": "mg/L"
+        },
+        "salinity": {
+          "freshwater": "0 ppt",
+          "seawater": "32-35 ppt"
+        }
+      },
+      "tank_requirements": {
+        "minimum_size": "200 liters per fish",
+        "stocking_density": "10-25 kg/m³",
+        "depth": "minimum 2 meters",
+        "flow_rate": "high (1-2 tank volumes per hour)"
+      },
+      "feeding": {
+        "type": "carnivore",
+        "protein_requirement": "40-50%",
+        "feeding_rate": "1-2% body weight per day",
+        "frequency": "2-4 times daily",
+        "feed_types": ["high-protein pellets", "fish oil", "krill"]
+      },
+      "growth": {
+        "market_size": "4000-6000 grams",
+        "growth_period": "18-24 months",
+        "daily_gain": "3-5 grams per day"
+      },
+      "common_diseases": [
+        "Sea lice",
+        "Infectious Salmon Anemia (ISA)",
+        "Bacterial kidney disease",
+        "Furunculosis"
+      ],
+      "notes": "Requires cold water, high oxygen, premium feed, higher operational costs"
+    },
+    {
+      "id": "shrimp_vannamei",
+      "common_name": "Pacific White Shrimp",
+      "scientific_name": "Litopenaeus vannamei",
+      "category": "marine_brackish",
+      "optimal_parameters": {
+        "temperature": {
+          "min": 26,
+          "max": 32,
+          "optimal": 29,
+          "unit": "°C"
+        },
+        "ph": {
+          "min": 7.5,
+          "max": 8.5,
+          "optimal": 8.0
+        },
+        "dissolved_oxygen": {
+          "min": 4.0,
+          "optimal": 6.0,
+          "unit": "mg/L"
+        },
+        "salinity": {
+          "min": 15,
+          "max": 35,
+          "optimal": 25,
+          "unit": "ppt"
+        },
+        "alkalinity": {
+          "min": 100,
+          "optimal": 150,
+          "unit": "mg/L CaCO3"
+        }
+      },
+      "tank_requirements": {
+        "minimum_size": "variable",
+        "stocking_density": "100-300 post-larvae per m²",
+        "depth": "1-1.5 meters"
+      },
+      "feeding": {
+        "type": "omnivore",
+        "protein_requirement": "30-38%",
+        "feeding_rate": "3-5% body weight per day",
+        "frequency": "3-4 times daily",
+        "feed_types": ["commercial shrimp pellets", "natural plankton"]
+      },
+      "growth": {
+        "market_size": "15-20 grams",
+        "growth_period": "3-4 months",
+        "weekly_gain": "1-1.5 grams per week"
+      },
+      "common_diseases": [
+        "White Spot Syndrome Virus (WSSV)",
+        "Vibriosis",
+        "Early Mortality Syndrome (EMS)",
+        "Black gill disease"
+      ],
+      "notes": "Sensitive to water quality, requires biosecurity, high-value crop, disease-prone"
+    },
+    {
+      "id": "carp",
+      "common_name": "Common Carp",
+      "scientific_name": "Cyprinus carpio",
+      "category": "freshwater",
+      "optimal_parameters": {
+        "temperature": {
+          "min": 20,
+          "max": 28,
+          "optimal": 24,
+          "unit": "°C"
+        },
+        "ph": {
+          "min": 6.5,
+          "max": 9.0,
+          "optimal": 7.5
+        },
+        "dissolved_oxygen": {
+          "min": 4.0,
+          "optimal": 6.0,
+          "unit": "mg/L"
+        }
+      },
+      "tank_requirements": {
+        "minimum_size": "100 liters per fish",
+        "stocking_density": "15-30 kg/m³",
+        "depth": "minimum 1 meter"
+      },
+      "feeding": {
+        "type": "omnivore",
+        "protein_requirement": "25-35%",
+        "feeding_rate": "2-4% body weight per day",
+        "frequency": "2-3 times daily",
+        "feed_types": ["commercial pellets", "grains", "natural organisms"]
+      },
+      "growth": {
+        "market_size": "500-1000 grams",
+        "growth_period": "8-12 months",
+        "daily_gain": "2-3 grams per day"
+      },
+      "common_diseases": [
+        "Carp pox",
+        "Dropsy",
+        "Ich",
+        "Bacterial infections"
+      ],
+      "notes": "Very hardy, bottom feeder, tolerates wide range of conditions, polyculture suitable"
+    }
+  ]
+}

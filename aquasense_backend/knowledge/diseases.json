@@ -1,0 +1,300 @@
+{
+  "diseases": [
+    {
+      "id": "bacterial_red_disease",
+      "name": "Bacterial Red Disease",
+      "type": "bacterial",
+      "pathogen": "Aeromonas species",
+      "symptoms": [
+        "Red lesions on body",
+        "Hemorrhages on skin and fins",
+        "Ulcers",
+        "Lethargy",
+        "Loss of appetite",
+        "Abnormal swimming"
+      ],
+      "causes": [
+        "Aeromonas bacteria",
+        "Poor water quality",
+        "Stress",
+        "Physical injuries",
+        "Weakened immune system"
+      ],
+      "treatment": [
+        "Quarantine infected fish immediately",
+        "Use antibiotics (oxytetracycline or florfenicol) as prescribed",
+        "Improve water quality",
+        "Increase aeration",
+        "Salt bath (1-3%)"
+      ],
+      "prevention": [
+        "Maintain excellent water quality",
+        "Regular water changes",
+        "Avoid overcrowding",
+        "Quarantine new fish",
+        "Reduce stress factors",
+        "Proper nutrition"
+      ],
+      "optimal_conditions": {
+        "temperature_range": "24-28°C",
+        "ph_range": "7.0-8.0",
+        "dissolved_oxygen": ">5 mg/L"
+      }
+    },
+    {
+      "id": "aeromoniasis",
+      "name": "Aeromoniasis (Motile Aeromonas Septicemia)",
+      "type": "bacterial",
+      "pathogen": "Aeromonas hydrophila",
+      "symptoms": [
+        "Hemorrhages on body",
+        "Fin rot",
+        "Ulcers",
+        "Swollen abdomen",
+        "Exophthalmia (bulging eyes)",
+        "Lethargy",
+        "Loss of appetite"
+      ],
+      "causes": [
+        "Aeromonas hydrophila bacteria",
+        "Poor water quality",
+        "Stress",
+        "High organic load",
+        "Temperature fluctuations"
+      ],
+      "treatment": [
+        "Antibiotic treatment (oxytetracycline, sulfonamides)",
+        "Improve water quality immediately",
+        "Increase dissolved oxygen",
+        "Reduce stocking density",
+        "Salt treatment"
+      ],
+      "prevention": [
+        "Maintain optimal water parameters",
+        "Regular monitoring",
+        "Avoid stress",
+        "Proper feeding",
+        "Quarantine protocols",
+        "Disinfect equipment"
+      ]
+    },
+    {
+      "id": "bacterial_gill_disease",
+      "name": "Bacterial Gill Disease",
+      "type": "bacterial",
+      "pathogen": "Flavobacterium branchiophilum",
+      "symptoms": [
+        "Rapid gill movement",
+        "Gasping at surface",
+        "Pale or swollen gills",
+        "Excess mucus on gills",
+        "Lethargy",
+        "Reduced feeding",
+        "Mortality"
+      ],
+      "causes": [
+        "Flavobacterium branchiophilum",
+        "Poor water quality",
+        "High ammonia levels",
+        "Overcrowding",
+        "Low dissolved oxygen"
+      ],
+      "treatment": [
+        "Improve water quality immediately",
+        "Increase aeration",
+        "Reduce feeding temporarily",
+        "Antibiotics (chloramine-T, hydrogen peroxide bath)",
+        "Copper sulfate treatment (carefully dosed)"
+      ],
+      "prevention": [
+        "Maintain high dissolved oxygen (>5 mg/L)",
+        "Keep ammonia at 0 ppm",
+        "Regular water changes",
+        "Avoid overcrowding",
+        "Proper filtration",
+        "Monitor water parameters"
+      ]
+    },
+    {
+      "id": "saprolegniasis",
+      "name": "Saprolegniasis (Fungal Infection)",
+      "type": "fungal",
+      "pathogen": "Saprolegnia species",
+      "symptoms": [
+        "White or gray cotton-like growth",
+        "Fluffy patches on body/fins",
+        "Fin deterioration",
+        "Often follows injury or stress",
+        "Secondary to bacterial infections"
+      ],
+      "causes": [
+        "Saprolegnia fungus (opportunistic)",
+        "Physical injury",
+        "Poor water quality",
+        "Low temperature",
+        "Weakened immune system",
+        "Stress"
+      ],
+      "treatment": [
+        "Salt bath (0.5-1% for 10-15 minutes)",
+        "Antifungal medication (malachite green, methylene blue, potassium permanganate)",
+        "Improve water quality",
+        "Remove dead tissue if severe"
+      ],
+      "prevention": [
+        "Avoid physical injuries",
+        "Maintain good water quality",
+        "Proper nutrition",
+        "Handle fish carefully",
+        "Quarantine injured fish",
+        "Maintain optimal temperature"
+      ]
+    },
+    {
+      "id": "parasitic_diseases",
+      "name": "Parasitic Infections",
+      "type": "parasitic",
+      "pathogen": "Various (Ich, Trichodina, Gyrodactylus, etc.)",
+      "symptoms": [
+        "White spots on body (Ich)",
+        "Scratching/flashing behavior",
+        "Excess mucus production",
+        "Rapid gill movement",
+        "Weight loss",
+        "Lethargy",
+        "Clamped fins"
+      ],
+      "causes": [
+        "Ichthyophthirius (Ich)",
+        "Trichodina",
+        "Gyrodactylus",
+        "Dactylogyrus",
+        "Anchor worms",
+        "Fish lice",
+        "Introduction of infected fish",
+        "Poor quarantine"
+      ],
+      "treatment": [
+        "Identify specific parasite",
+        "For Ich: raise temperature to 30°C, salt treatment (1-2%), copper sulfate",
+        "For external parasites: formalin bath, potassium permanganate",
+        "For internal parasites: medicated feed"
+      ],
+      "prevention": [
+        "Quarantine new fish for 2-3 weeks",
+        "Disinfect equipment",
+        "Regular inspection",
+        "Maintain water quality",
+        "Avoid stress",
+        "Clean equipment between uses"
+      ]
+    },
+    {
+      "id": "white_tail_disease",
+      "name": "Viral White Tail Disease",
+      "type": "viral",
+      "pathogen": "Species-specific virus",
+      "symptoms": [
+        "White discoloration of tail",
+        "Tail necrosis",
+        "Lethargy",
+        "Loss of appetite",
+        "Abnormal swimming",
+        "High mortality rate",
+        "Systemic infection"
+      ],
+      "causes": [
+        "Viral pathogen (species-specific virus)",
+        "Infected fish introduction",
+        "Contaminated water",
+        "Stress",
+        "Poor biosecurity"
+      ],
+      "treatment": [
+        "No specific antiviral treatment",
+        "Supportive care only",
+        "Quarantine infected fish immediately",
+        "Cull severely affected fish to prevent spread",
+        "Disinfect all equipment and tanks"
+      ],
+      "prevention": [
+        "Source fish from certified disease-free suppliers",
+        "Strict quarantine protocols (3-4 weeks)",
+        "Excellent biosecurity",
+        "Do not share equipment between tanks",
+        "Maintain optimal conditions to boost immunity",
+        "Vaccination if available"
+      ]
+    },
+    {
+      "id": "columnaris",
+      "name": "Columnaris Disease",
+      "type": "bacterial",
+      "pathogen": "Flavobacterium columnare",
+      "symptoms": [
+        "White or gray patches on skin",
+        "Frayed fins",
+        "Gill necrosis",
+        "Lethargy",
+        "Loss of appetite"
+      ],
+      "causes": [
+        "Poor water quality",
+        "High organic load",
+        "Stress",
+        "Temperature fluctuations"
+      ],
+      "treatment": [
+        "Improve water quality immediately",
+        "Salt bath (1-3%)",
+        "Antibiotics (oxytetracycline or nitrofurazone)",
+        "Quarantine affected fish",
+        "Reduce stocking density"
+      ],
+      "prevention": [
+        "Maintain excellent water quality",
+        "Regular water changes",
+        "Avoid overcrowding",
+        "Quarantine new fish",
+        "Reduce stress factors"
+      ],
+      "optimal_conditions": {
+        "temperature_range": "24-28°C",
+        "ph_range": "7.0-8.0",
+        "dissolved_oxygen": ">5 mg/L"
+      }
+    },
+    {
+      "id": "ich",
+      "name": "Ichthyophthiriasis (Ich/White Spot)",
+      "type": "parasitic",
+      "pathogen": "Ichthyophthirius multifiliis",
+      "symptoms": [
+        "White spots on body and fins",
+        "Scratching against objects",
+        "Rapid gill movement",
+        "Loss of appetite",
+        "Clamped fins"
+      ],
+      "causes": [
+        "Introduction of infected fish",
+        "Stress",
+        "Temperature changes",
+        "Poor quarantine"
+      ],
+      "treatment": [
+        "Raise temperature gradually to 30°C",
+        "Salt treatment (1-2%)",
+        "Copper-based medication",
+        "Formalin or malachite green",
+        "Treat entire tank"
+      ],
+      "prevention": [
+        "Quarantine new fish for 2-3 weeks",
+        "Maintain stable temperature",
+        "Good water quality",
+        "Reduce stress"
+      ]
+    }
+  ]
+}

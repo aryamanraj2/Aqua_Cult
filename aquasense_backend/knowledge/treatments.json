@@ -1,0 +1,149 @@
+{
+  "treatments": [
+    {
+      "id": "salt_bath",
+      "name": "Salt Bath Treatment",
+      "type": "chemical",
+      "indications": [
+        "External parasites",
+        "Fungal infections",
+        "Bacterial infections (mild)",
+        "Stress reduction"
+      ],
+      "dosage": {
+        "low": "0.1-0.3% (1-3 g/L)",
+        "medium": "0.5-1% (5-10 g/L)",
+        "high": "2-3% (20-30 g/L)"
+      },
+      "duration": {
+        "low": "Long-term (weeks)",
+        "medium": "3-7 days",
+        "high": "5-30 minutes (dip)"
+      },
+      "instructions": [
+        "Dissolve salt completely before adding fish",
+        "Use non-iodized salt",
+        "Gradually adjust salinity",
+        "Monitor fish behavior",
+        "Ensure good aeration"
+      ],
+      "cautions": [
+        "Not suitable for all species",
+        "Avoid with scaleless fish",
+        "Monitor water parameters",
+        "Gradual changes only"
+      ]
+    },
+    {
+      "id": "antibiotic_oxytetracycline",
+      "name": "Oxytetracycline Treatment",
+      "type": "antibiotic",
+      "indications": [
+        "Bacterial infections",
+        "Columnaris",
+        "Fin rot",
+        "Internal bacterial infections"
+      ],
+      "dosage": "50-75 mg/kg body weight per day",
+      "duration": "7-10 days",
+      "administration": [
+        "Mixed with feed",
+        "Bath treatment (50-100 mg/L for 1 hour)",
+        "Injection (for valuable fish)"
+      ],
+      "instructions": [
+        "Complete full treatment course",
+        "Do not use with other antibiotics",
+        "Remove activated carbon from filter",
+        "Increase aeration"
+      ],
+      "cautions": [
+        "Prescription required in many countries",
+        "Can affect beneficial bacteria",
+        "May cause water discoloration",
+        "Not for human consumption fish during treatment"
+      ]
+    },
+    {
+      "id": "temperature_elevation",
+      "name": "Temperature Elevation Therapy",
+      "type": "physical",
+      "indications": [
+        "Ich (white spot disease)",
+        "Some parasitic infections",
+        "Accelerate parasite life cycle"
+      ],
+      "target_temperature": "30-32°C",
+      "duration": "7-14 days",
+      "instructions": [
+        "Increase temperature gradually (1°C per day)",
+        "Maintain increased temperature throughout treatment",
+        "Increase aeration significantly",
+        "Monitor fish closely for stress",
+        "Gradually reduce temperature after treatment"
+      ],
+      "cautions": [
+        "Not suitable for cold-water species",
+        "Ensure adequate oxygen levels",
+        "May stress sensitive fish",
+        "Monitor water parameters closely"
+      ]
+    },
+    {
+      "id": "quarantine",
+      "name": "Quarantine Protocol",
+      "type": "preventive",
+      "purpose": "Prevent disease introduction",
+      "duration": "14-28 days",
+      "requirements": [
+        "Separate tank or system",
+        "Dedicated equipment",
+        "Stable water parameters",
+        "Regular observation"
+      ],
+      "procedure": [
+        "Set up quarantine tank with proper filtration",
+        "Acclimate new fish slowly",
+        "Observe for disease symptoms daily",
+        "Treat any issues before moving to main system",
+        "Disinfect equipment after use"
+      ],
+      "monitoring": [
+        "Daily visual inspection",
+        "Check for abnormal behavior",
+        "Monitor feeding",
+        "Test water parameters",
+        "Document observations"
+      ]
+    },
+    {
+      "id": "water_change",
+      "name": "Water Change Therapy",
+      "type": "environmental",
+      "indications": [
+        "Poor water quality",
+        "Toxin buildup",
+        "Disease prevention",
+        "General health maintenance"
+      ],
+      "frequency": {
+        "routine": "15-25% weekly",
+        "therapeutic": "25-50% daily or every other day",
+        "emergency": "50-75% immediately"
+      },
+      "procedure": [
+        "Prepare fresh water (dechlorinated, correct temperature)",
+        "Remove debris before water change",
+        "Slowly remove old water",
+        "Add new water gradually",
+        "Test parameters after change"
+      ],
+      "benefits": [
+        "Dilutes toxins and pathogens",
+        "Replenishes minerals",
+        "Removes organic waste",
+        "Stimulates fish health"
+      ]
+    }
+  ]
+}
