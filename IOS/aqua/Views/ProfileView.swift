@@ -1,9 +1,3 @@
-//
-//  ProfileView.swift
-//  aqua
-//
-//  Created on 02/11/25.
-//
 
 import SwiftUI
 

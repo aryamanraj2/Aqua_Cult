@@ -1,9 +1,3 @@
-//
-//  AIAnalyticsButton.swift
-//  aqua
-//
-//  Created by AI Assistant on 01/11/25.
-//
 
 import SwiftUI
 

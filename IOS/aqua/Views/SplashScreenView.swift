@@ -1,9 +1,3 @@
-//
-//  SplashScreenView.swift
-//  aqua
-//
-//  Created by aryaman jaiswal on 31/10/25.
-//
 
 import SwiftUI
 

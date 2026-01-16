@@ -1,9 +1,3 @@
-//
-//  TankView.swift
-//  aqua
-//
-//  Created by AI Assistant on 31/10/25.
-//
 
 import SwiftUI
 
