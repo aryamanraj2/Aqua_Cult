@@ -1,0 +1,14 @@
+# API Keys and sensitive configuration
+app/aqua/aqua/APIConfig.swift
+
+
+# Xcode
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+
+# iOS build artifacts
+DerivedData/
+build/
+*.ipa
