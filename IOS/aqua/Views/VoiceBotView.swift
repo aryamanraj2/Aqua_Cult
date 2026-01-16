@@ -10,9 +10,11 @@ import SwiftUI
 struct VoiceBotView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var voiceBotManager = VoiceBotManager()
+    @StateObject private var languageManager = LanguageManager.shared
     @EnvironmentObject private var tankManager: TankManager
     @EnvironmentObject private var cartManager: CartManager
     @State private var backgroundOffset: CGFloat = 0
+    @State private var showLanguagePackAlert = false
     
     var body: some View {
         NavigationStack {
@@ -23,19 +25,24 @@ struct VoiceBotView: View {
                 
                 VStack(spacing: 0) {
                     // Status bar (compact)
-                    if voiceBotManager.isRecording || voiceBotManager.isProcessing || voiceBotManager.isSpeaking {
+                    if voiceBotManager.isRecording || voiceBotManager.isProcessing || voiceBotManager.isSpeaking || voiceBotManager.isTranslating {
                         HStack(spacing: 12) {
                             // Animated indicator
                             ZStack {
                                 Circle()
                                     .fill(.white.opacity(0.2))
                                     .frame(width: 32, height: 32)
-                                
+
                                 if voiceBotManager.isRecording {
                                     Image(systemName: "waveform")
                                         .font(.system(size: 16, weight: .medium))
                                         .foregroundStyle(.white)
                                         .symbolEffect(.variableColor.iterative.reversing, options: .repeating)
+                                } else if voiceBotManager.isTranslating {
+                                    Image(systemName: "arrow.left.arrow.right")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundStyle(.purple)
+                                        .symbolEffect(.pulse, options: .repeating)
                                 } else if voiceBotManager.isProcessing {
                                     ProgressView()
                                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
@@ -47,20 +54,24 @@ struct VoiceBotView: View {
                                         .symbolEffect(.variableColor.iterative.reversing, options: .repeating)
                                 }
                             }
-                            
+
                             // Status text
                             VStack(alignment: .leading, spacing: 2) {
                                 if voiceBotManager.isRecording {
                                     Text("Listening...")
                                         .font(.system(size: 15, weight: .semibold))
                                         .foregroundStyle(.white)
-                                    
+
                                     if !voiceBotManager.currentTranscript.isEmpty {
                                         Text(voiceBotManager.currentTranscript)
                                             .font(.system(size: 12, weight: .regular))
                                             .foregroundStyle(.white.opacity(0.7))
                                             .lineLimit(1)
                                     }
+                                } else if voiceBotManager.isTranslating {
+                                    Text("Translating...")
+                                        .font(.system(size: 15, weight: .semibold))
+                                        .foregroundStyle(.purple)
                                 } else if voiceBotManager.isProcessing {
                                     Text("Thinking...")
                                         .font(.system(size: 15, weight: .semibold))
@@ -71,7 +82,7 @@ struct VoiceBotView: View {
                                         .foregroundStyle(.cyan)
                                 }
                             }
-                            
+
                             Spacer()
                         }
                         .padding(.horizontal, 20)
@@ -161,23 +172,61 @@ struct VoiceBotView: View {
                             .clipShape(Circle())
                     }
                 }
-                
-                if !voiceBotManager.conversationHistory.isEmpty {
-                    ToolbarItem(placement: .topBarTrailing) {
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    HStack(spacing: 8) {
+                        // Language toggle button
                         Button {
-                            withAnimation(.smooth(duration: 0.4)) {
-                                voiceBotManager.clearConversation()
+                            let newLanguage: AppLanguage = languageManager.currentLanguage == .english ? .hindi : .english
+
+                            // Check if Hindi is available
+                            if newLanguage == .hindi && !languageManager.speechRecognitionAvailable {
+                                showLanguagePackAlert = true
+                            } else {
+                                withAnimation(.smooth(duration: 0.3)) {
+                                    languageManager.switchLanguage(to: newLanguage)
+                                }
                             }
                         } label: {
-                            Image(systemName: "arrow.counterclockwise")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(.white)
-                                .frame(width: 32, height: 32)
-                                .background(.ultraThinMaterial)
-                                .clipShape(Circle())
+                            HStack(spacing: 4) {
+                                Image(systemName: "globe")
+                                    .font(.system(size: 12, weight: .semibold))
+                                Text(languageManager.currentLanguage == .english ? "EN" : "HI")
+                                    .font(.system(size: 11, weight: .bold))
+                            }
+                            .foregroundStyle(.white)
+                            .frame(width: 50, height: 32)
+                            .background(.ultraThinMaterial)
+                            .clipShape(Capsule())
+                        }
+
+                        // Clear conversation button
+                        if !voiceBotManager.conversationHistory.isEmpty {
+                            Button {
+                                withAnimation(.smooth(duration: 0.4)) {
+                                    voiceBotManager.clearConversation()
+                                }
+                            } label: {
+                                Image(systemName: "arrow.counterclockwise")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: 32, height: 32)
+                                    .background(.ultraThinMaterial)
+                                    .clipShape(Circle())
+                            }
                         }
                     }
                 }
+            }
+            .alert("Hindi Language Pack Required", isPresented: $showLanguagePackAlert) {
+                Button("Go to Settings", role: .none) {
+                    if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(settingsURL)
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text(languageManager.languagePackInstructions)
             }
         }
         .onAppear {

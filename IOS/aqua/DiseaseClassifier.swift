@@ -13,7 +13,7 @@ class DiseaseClassifier {
     static let shared = DiseaseClassifier()
 
     // Backend API configuration
-    private let baseURL = "http://192.168.243.1:8000/api/v1"  // Change to your backend URL
+    private let baseURL = "http://192.168.1.21:8000/api/v1"  // Change to your backend URL
 
     // Disease information database - mapped to the 7 outputs from fish_disease.keras model
     private let diseaseInfo: [String: (description: String, recommendations: [String])] = [
@@ -266,12 +266,12 @@ class DiseaseClassifier {
 
 // MARK: - API Response Models
 
-struct DiseaseDetectionResponse: Codable {
+struct DiseaseDetectionResponse: Codable, Sendable {
     let predictions: [DiseasePrediction]
     let message: String?
 }
 
-struct DiseasePrediction: Codable {
+struct DiseasePrediction: Codable, Sendable {
     let name: String
     let confidence: Double
     let description: String?

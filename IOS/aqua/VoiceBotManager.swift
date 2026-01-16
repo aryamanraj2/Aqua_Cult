@@ -20,22 +20,44 @@ class VoiceBotManager: NSObject, ObservableObject {
     @Published var error: String?
     @Published var recordingPermissionGranted = false
     @Published var isSpeaking = false
-    
+    @Published var isTranslating = false
+
     // TTS Service
     private let ttsService = TTSSummaryService.shared
-    
+
+    // Translation Service
+    private let translationService = TranslationService.shared
+
+    // Language Manager
+    private let languageManager = LanguageManager.shared
+
     private var audioEngine: AVAudioEngine?
-    private var speechRecognizer: SFSpeechRecognizer?
+    private var speechRecognizers: [String: SFSpeechRecognizer] = [:]
+    private var currentSpeechRecognizer: SFSpeechRecognizer?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
-    
+
     // Conversation context
     private var conversationContext: [String] = []
-    
+
     override init() {
         super.init()
-        speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
+        setupSpeechRecognizers()
         checkPermissions()
+    }
+
+    private func setupSpeechRecognizers() {
+        // Initialize recognizers for both languages
+        speechRecognizers["en-US"] = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
+        speechRecognizers["hi-IN"] = SFSpeechRecognizer(locale: Locale(identifier: "hi-IN"))
+
+        // Set current recognizer based on language manager
+        updateCurrentRecognizer()
+    }
+
+    private func updateCurrentRecognizer() {
+        currentSpeechRecognizer = speechRecognizers[languageManager.currentLanguage.localeIdentifier]
+        print("🎤 [VoiceBotManager] Using speech recognizer for: \(languageManager.currentLanguage.displayName)")
     }
     
     func checkPermissions() {
@@ -66,6 +88,9 @@ class VoiceBotManager: NSObject, ObservableObject {
     }
     
     func startRecording() {
+        // Update recognizer based on current language
+        updateCurrentRecognizer()
+
         // Configure the audio session first, before accessing any IO nodes
         do {
             try AVAudioSession.sharedInstance().setCategory(.record, mode: .measurement, options: .duckOthers)
@@ -74,37 +99,43 @@ class VoiceBotManager: NSObject, ObservableObject {
             self.error = "Failed to configure audio session: \(error.localizedDescription)"
             return
         }
-        
+
         guard recordingPermissionGranted else {
             error = "Microphone permission not granted"
             return
         }
-        
+
+        // Check if speech recognizer is available for selected language
+        guard let recognizer = currentSpeechRecognizer else {
+            error = "Speech recognition not available for \(languageManager.currentLanguage.displayName)"
+            return
+        }
+
         // Reset
         currentTranscript = ""
         error = nil
-        
+
         audioEngine = AVAudioEngine()
         guard let audioEngine = audioEngine,
               let inputNode = audioEngine.inputNode as AVAudioInputNode? else {
             error = "Audio engine initialization failed"
             return
         }
-        
+
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
         guard let recognitionRequest = recognitionRequest else {
             error = "Unable to create recognition request"
             return
         }
-        
+
         recognitionRequest.shouldReportPartialResults = true
-        
-        recognitionTask = speechRecognizer?.recognitionTask(with: recognitionRequest) { [weak self] result, error in
+
+        recognitionTask = recognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
             Task { @MainActor in
                 if let result = result {
                     self?.currentTranscript = result.bestTranscription.formattedString
                 }
-                
+
                 if error != nil || result?.isFinal == true {
                     self?.stopRecording()
                 }
@@ -154,20 +185,42 @@ class VoiceBotManager: NSObject, ObservableObject {
     }
     
     private func processUserInput(_ text: String) {
-        // Add user message to history
-        let userMessage = VoiceMessage(
-            id: UUID().uuidString,
-            role: .user,
-            content: text,
-            timestamp: Date()
-        )
-        conversationHistory.append(userMessage)
-        
-        // Add to context
-        conversationContext.append(text)
-        
-        // Reset transcript
-        currentTranscript = ""
+        Task {
+            var processedText = text
+            var displayText = text
+
+            // If user is speaking Hindi, translate to English for Gemini
+            if languageManager.currentLanguage == .hindi {
+                isTranslating = true
+                do {
+                    print("🔄 [VoiceBotManager] Translating Hindi input to English...")
+                    processedText = try await translationService.translateHindiToEnglish(text)
+                    displayText = text // Keep original Hindi for display
+                    print("✅ [VoiceBotManager] Translation complete: \(processedText.prefix(50))...")
+                } catch {
+                    print("❌ [VoiceBotManager] Translation failed: \(error)")
+                    self.error = "Translation failed: \(error.localizedDescription)"
+                    isTranslating = false
+                    return
+                }
+                isTranslating = false
+            }
+
+            // Add user message to history (show original language)
+            let userMessage = VoiceMessage(
+                id: UUID().uuidString,
+                role: .user,
+                content: displayText,
+                timestamp: Date()
+            )
+            conversationHistory.append(userMessage)
+
+            // Add English version to context (for Gemini)
+            conversationContext.append(processedText)
+
+            // Reset transcript
+            currentTranscript = ""
+        }
     }
     
     func sendMessage(_ message: String, tanks: [Tank]) async {
@@ -184,31 +237,61 @@ class VoiceBotManager: NSObject, ObservableObject {
                 tanks: tanks
             )
             print("🎤 [VoiceBotManager] Received response: \(response.textResponse.prefix(50))...")
-            
-            // Add assistant message
+
+            var displayText = response.textResponse
+            var spokenText = response.textResponse
+
+            // If user's language is Hindi, translate response to Hindi (preserving product names)
+            if languageManager.currentLanguage == .hindi {
+                isTranslating = true
+                do {
+                    print("🔄 [VoiceBotManager] Translating response to Hindi, preserving product names...")
+
+                    // Extract product names from recommended products
+                    let productNames = response.recommendedProducts.map { $0.name }
+
+                    // Translate to Hindi while preserving English product names
+                    spokenText = try await translationService.translateToHindiPreservingProducts(
+                        response.textResponse,
+                        products: productNames
+                    )
+                    displayText = spokenText
+                    print("✅ [VoiceBotManager] Translation complete: \(spokenText.prefix(50))...")
+
+                } catch {
+                    print("⚠️ [VoiceBotManager] Translation failed, using English: \(error)")
+                    // Fall back to English if translation fails
+                    displayText = response.textResponse
+                    spokenText = response.textResponse
+                }
+                isTranslating = false
+            }
+
+            // Add assistant message (in user's language)
             let assistantMessage = VoiceMessage(
                 id: UUID().uuidString,
                 role: .assistant,
-                content: response.textResponse,
+                content: displayText,
                 timestamp: Date(),
                 suggestedProducts: response.recommendedProducts
             )
             conversationHistory.append(assistantMessage)
-            
-            // Update context with response
+
+            // Update context with English response (for consistency with Gemini)
             conversationContext.append(response.textResponse)
 
             // Speak the response
             isProcessing = false
 
-            // Start speaking the response with informative mode
+            // Set TTS language based on current language
+            ttsService.setLanguage(languageManager.currentLanguage == .hindi ? .hindi : .english)
             ttsService.setMode(.informative)
-            ttsService.speak(response.textResponse)
+            ttsService.speak(spokenText)
             isSpeaking = true
 
             // Monitor TTS state
             observeTTSState()
-            
+
         } catch {
             print("❌ [VoiceBotManager] Error: \(error)")
             print("❌ [VoiceBotManager] Error description: \(error.localizedDescription)")
