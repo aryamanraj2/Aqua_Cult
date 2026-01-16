@@ -68,27 +68,38 @@ struct DashboardView: View {
                         }
 
                     // My Tanks Section
-                    VStack(spacing: 16) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(localizationManager.localizedString(for: "my_tanks"))
-                                    .font(.system(size: 28, weight: .bold))
-                                    .foregroundColor(.deepOcean)
-                                Text(localizationManager.localizedString(for: "monitor_aquaculture"))
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.mediumGray)
-                            }
-                            Spacer()
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(localizationManager.localizedString(for: "my_tanks"))
+                                .font(.system(size: 28, weight: .bold))
+                                .foregroundColor(.deepOcean)
+                            Text(localizationManager.localizedString(for: "monitor_aquaculture"))
+                                .font(.system(size: 16))
+                                .foregroundColor(.mediumGray)
                         }
-                        .padding(.horizontal)
-                        
-                        // Tank Cards
+                        Spacer()
+                        Button {
+                            showingAddTank = true
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundColor(.oceanBlue)
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal)
+                    
+                    // Tank Cards
+                    VStack(spacing: 16) {
                         ForEach(tankManager.tanks) { tank in
                             NavigationLink(destination: TankView(tank: tank)) {
                                 TankCard(tank: tank)
-                                    .padding(.horizontal)
+                                    .contentShape(Rectangle())
                             }
                             .buttonStyle(PlainButtonStyle())
+                            .padding(.horizontal)
                         }
                     }
                 }
@@ -106,30 +117,19 @@ struct DashboardView: View {
             .navigationBarTitleDisplayMode(.large) // Enables the large title that collapses on scroll
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    HStack(spacing: 8) {
-                        Button {
-                            showingVoiceBot = true
-                        } label: {
-                            Image(systemName: "mic.circle.fill")
-                                .font(.title3)
-                                .foregroundColor(.oceanBlue)
-                        }
-                        .matchedTransitionSource(id: "voiceBotTransition", in: namespace)
-                        
-                        Button {
-                            showingAddTank = true
-                        } label: {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.title3)
-                                .foregroundColor(.oceanBlue)
-                        }
-                        .matchedTransitionSource(id: "newTankTransition", in: namespace)
+                    Button {
+                        showingVoiceBot = true
+                    } label: {
+                        Image(systemName: "mic.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.oceanBlue)
                     }
+                    .matchedTransitionSource(id: "voiceBotTransition", in: namespace)
                     .onBoarding(1) {
                         TutorialContentView(
-                            title: localizationManager.localizedString(for: "voice_add_tank"),
-                            description: localizationManager.localizedString(for: "voice_add_tank_desc"),
-                            icon: "mic.and.plus"
+                            title: localizationManager.localizedString(for: "voice_assistant"),
+                            description: localizationManager.localizedString(for: "voice_assistant_desc"),
+                            icon: "mic.fill"
                         )
                     }
                 }
@@ -138,9 +138,8 @@ struct DashboardView: View {
                 NavigationStack {
                     AddTankView(tanks: $tankManager.tanks)
                 }
-                .presentationDetents([.large])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
-                .navigationTransition(.zoom(sourceID: "newTankTransition", in: namespace))
             }
             .sheet(isPresented: $showingVoiceBot) {
                 VoiceBotView()

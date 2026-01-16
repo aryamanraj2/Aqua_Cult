@@ -16,6 +16,7 @@ struct AddTankView: View {
     @State private var showingImagePicker = false
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var selectedImage: UIImage?
+    @State private var backgroundOffset: CGFloat = 0
     
     let availableSpecies = ["Salmon", "Cod", "Trout", "Tilapia", "Shrimp", "Catfish", "Bass"]
     let stages = ["Preparation", "Stocking", "Grow-out", "Feeding", "Monitoring", "Harvesting"]
@@ -48,12 +49,17 @@ struct AddTankView: View {
     }
     
     private var backgroundGradient: some View {
-        LinearGradient(
-            colors: [Color.deepOcean, Color.mediumBlue.opacity(0.8)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
+        LiquidGlassBackground(offset: backgroundOffset)
+            .ignoresSafeArea()
+            .onAppear {
+                startBackgroundAnimation()
+            }
+    }
+    
+    private func startBackgroundAnimation() {
+        withAnimation(.linear(duration: 20).repeatForever(autoreverses: false)) {
+            backgroundOffset = 360
+        }
     }
     
     private var mainContent: some View {
