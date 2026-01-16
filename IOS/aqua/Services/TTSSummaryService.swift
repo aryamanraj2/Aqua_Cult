@@ -13,9 +13,10 @@ class TTSSummaryService: NSObject, ObservableObject {
     
     private var synthesizer: AVSpeechSynthesizer
     
-    // Supported language (US English only)
+    // Supported languages
     enum Language: String {
         case english = "en-US"
+        case hindi = "hi-IN"
     }
     
     // Different speaking styles or “modes”
@@ -84,54 +85,87 @@ class TTSSummaryService: NSObject, ObservableObject {
         isPaused = false
     }
     
-    /// Choose the best US English voice available, prioritizing natural-sounding options.
+    /// Choose the best voice available for the current language, prioritizing natural-sounding options.
     private func selectVoice() -> AVSpeechSynthesisVoice {
-        let preferredVoices = ["Vicki", "Daniel", "Samantha", "Allison", "Ava"] // Prioritize more natural-sounding voices
+        let languageCode = currentLanguage.rawValue
 
-        // Attempt to find a preferred voice
-        if let selectedVoice = AVSpeechSynthesisVoice.speechVoices().first(where: { voice in
-            voice.language == "en-US" && preferredVoices.contains(where: { voice.name.contains($0) })
-        }) {
-            return selectedVoice
+        switch currentLanguage {
+        case .english:
+            let preferredVoices = ["Vicki", "Daniel", "Samantha", "Allison", "Ava"]
+
+            // Attempt to find a preferred English voice
+            if let selectedVoice = AVSpeechSynthesisVoice.speechVoices().first(where: { voice in
+                voice.language == languageCode && preferredVoices.contains(where: { voice.name.contains($0) })
+            }) {
+                return selectedVoice
+            }
+
+        case .hindi:
+            // For Hindi, find any available Hindi voice
+            // Common Hindi voice names: "Lekha" (female), others may vary by device
+            if let hindiVoice = AVSpeechSynthesisVoice.speechVoices().first(where: { voice in
+                voice.language.hasPrefix("hi")
+            }) {
+                print("✅ [TTSService] Selected Hindi voice: \(hindiVoice.name)")
+                return hindiVoice
+            } else {
+                print("⚠️ [TTSService] No Hindi voice found, checking for hi-IN specifically...")
+            }
         }
 
-        // Fallback to any available en-US voice if preferred voices are not found
-        if let defaultUSVoice = AVSpeechSynthesisVoice.speechVoices().first(where: { $0.language == "en-US" }) {
-            return defaultUSVoice
+        // Fallback to any available voice for the current language
+        if let defaultVoice = AVSpeechSynthesisVoice.speechVoices().first(where: { $0.language == languageCode }) {
+            return defaultVoice
         }
 
-        // Fallback to the system's default voice for the current language if no specific en-US voice is found
-        if let languageVoice = AVSpeechSynthesisVoice(language: currentLanguage.rawValue) {
+        // Fallback to the system's default voice for the current language
+        if let languageVoice = AVSpeechSynthesisVoice(language: languageCode) {
             return languageVoice
         }
 
         // Ultimate fallback: return the first available voice
+        print("⚠️ [TTSService] Using ultimate fallback voice")
         return AVSpeechSynthesisVoice.speechVoices().first ?? AVSpeechSynthesisVoice(language: "en-US")!
     }
     
     /// Refine text to create natural pauses and rhythm
     private func preprocessTextForSpeech(_ text: String) -> String {
         var t = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        // Ensure proper spacing after punctuation
-        // Ensure proper spacing after punctuation: replace punctuation followed by zero or more spaces with punctuation and a single space
-        t = t.replacingOccurrences(of: "([.,:;])\\s*", with: "$1 ", options: .regularExpression)
 
-        // Add pauses after key analytical terms for clarity, ensuring word boundaries
-        let keywords = ["temperature", "oxygen", "ph", "ammonia", "tank", "level", "fish", "sensor", "reading"]
-        for word in keywords {
-            // Use word boundaries to avoid matching parts of other words
-            t = t.replacingOccurrences(of: "\\b\(word)\\b", with: "\(word),", options: .regularExpression)
+        // Language-specific preprocessing
+        if currentLanguage == .hindi {
+            // For Hindi text, minimal preprocessing
+            // Hindi uses devanagari script with its own punctuation
+            // Just ensure proper spacing
+            t = t.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+
+            // Add leading phrase in Hindi for informative mode
+            if currentMode == .informative && !t.hasPrefix("यहाँ") && !t.hasPrefix("यह") {
+                // "Here's what I found" in Hindi
+                t = "यह है जानकारी। " + t
+            }
+
+        } else {
+            // English preprocessing
+            // Ensure proper spacing after punctuation
+            t = t.replacingOccurrences(of: "([.,:;])\\s*", with: "$1 ", options: .regularExpression)
+
+            // Add pauses after key analytical terms for clarity, ensuring word boundaries
+            let keywords = ["temperature", "oxygen", "ph", "ammonia", "tank", "level", "fish", "sensor", "reading"]
+            for word in keywords {
+                // Use word boundaries to avoid matching parts of other words
+                t = t.replacingOccurrences(of: "\\b\(word)\\b", with: "\(word),", options: .regularExpression)
+            }
+
+            // Add a leading phrase for informative tone
+            if currentMode == .informative && !t.lowercased().hasPrefix("here") {
+                t = "Here's what I found. " + t
+            }
+
+            // Clean up multiple spaces into single spaces
+            t = t.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
         }
-        
-        // Add a leading phrase for informative tone (optional)
-        if currentMode == .informative && !t.lowercased().hasPrefix("here") {
-            t = "Here’s what I found. " + t
-        }
-        
-        // Clean up multiple spaces into single spaces
-        t = t.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-        
+
         return t
     }
     
