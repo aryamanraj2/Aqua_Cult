@@ -4,18 +4,20 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject var tankManager: TankManager
     @EnvironmentObject var profileManager: UserProfileManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var showingSettings = false
     @State private var showingEditProfile = false
-    
+    @State private var showingLanguagePicker = false
+
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
                 // Profile Header
                 profileHeader
-                
+
                 // Stats Section
                 statsSection
-                
+
                 // Settings & Information
                 settingsSection
             }
@@ -28,14 +30,14 @@ struct ProfileView: View {
                 endPoint: .bottomTrailing
             )
         )
-        .navigationTitle("Profile")
+        .navigationTitle(localizationManager.localizedString(for: "profile"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     showingEditProfile = true
                 } label: {
-                    Text("Edit")
+                    Text(localizationManager.localizedString(for: "edit"))
                         .foregroundColor(.oceanBlue)
                 }
             }
@@ -46,6 +48,9 @@ struct ProfileView: View {
         .sheet(isPresented: $showingSettings) {
             SettingsView()
         }
+        .sheet(isPresented: $showingLanguagePicker) {
+            LanguagePickerView()
+        }
     }
     
     private var profileHeader: some View {
@@ -55,7 +60,7 @@ struct ProfileView: View {
                 Circle()
                     .fill(Color.oceanBlue.opacity(0.1))
                     .frame(width: 120, height: 120)
-                
+
                 Image(systemName: "person.fill")
                     .font(.system(size: 50))
                     .foregroundColor(.oceanBlue)
@@ -64,26 +69,26 @@ struct ProfileView: View {
                 Circle()
                     .stroke(Color.oceanBlue, lineWidth: 3)
             )
-            
+
             VStack(spacing: 4) {
                 Text(profileManager.profile.fullName)
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
-                
+
                 Text(profileManager.profile.mobile)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
-                
+
                 Text(profileManager.profile.address)
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
-                
-                Text("Pincode: \(profileManager.profile.pincode)")
+
+                Text("\(localizationManager.localizedString(for: "pincode")): \(profileManager.profile.pincode)")
                     .font(.caption2)
                     .foregroundColor(.secondary)
-                
+
                 Text(profileManager.profile.location)
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -95,30 +100,30 @@ struct ProfileView: View {
     
     private var statsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("My Aquaculture")
+            Text(localizationManager.localizedString(for: "my_aquaculture"))
                 .font(.headline)
                 .fontWeight(.semibold)
                 .padding(.horizontal)
-            
+
             HStack(spacing: 16) {
                 StatCard(
                     icon: "fish.fill",
                     value: "\(tankManager.tankCount)",
-                    label: "Active Tanks",
+                    label: localizationManager.localizedString(for: "active_tanks"),
                     color: .oceanBlue
                 )
-                
+
                 StatCard(
                     icon: "drop.fill",
                     value: String(format: "%.1f", tankManager.totalVolume) + "m³",
-                    label: "Total Volume",
+                    label: localizationManager.localizedString(for: "total_volume"),
                     color: .blue
                 )
-                
+
                 StatCard(
                     icon: "calendar",
                     value: "\(profileManager.profile.experienceYears)",
-                    label: "Years Experience",
+                    label: localizationManager.localizedString(for: "years_experience"),
                     color: .green
                 )
             }
@@ -133,49 +138,61 @@ struct ProfileView: View {
     
     private var settingsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Settings & Info")
+            Text(localizationManager.localizedString(for: "settings_info"))
                 .font(.headline)
                 .fontWeight(.semibold)
                 .padding(.horizontal)
-            
+
             VStack(spacing: 0) {
+                // Language Selection Row
+                LanguageSettingsRow(
+                    icon: "globe",
+                    title: localizationManager.localizedString(for: "language"),
+                    currentLanguage: localizationManager.currentLanguage
+                ) {
+                    showingLanguagePicker = true
+                }
+
+                Divider()
+                    .padding(.leading, 60)
+
                 SettingsRow(
                     icon: "gear.circle.fill",
-                    title: "App Settings",
-                    subtitle: "Preferences & configuration"
+                    title: localizationManager.localizedString(for: "app_settings"),
+                    subtitle: localizationManager.localizedString(for: "preferences_config")
                 ) {
                     showingSettings = true
                 }
-                
+
                 Divider()
                     .padding(.leading, 60)
-                
+
                 SettingsRow(
                     icon: "questionmark.circle.fill",
-                    title: "Help & Support",
-                    subtitle: "FAQs and contact support"
+                    title: localizationManager.localizedString(for: "help_support"),
+                    subtitle: localizationManager.localizedString(for: "faqs_contact")
                 ) {
                     // Handle help action
                 }
-                
+
                 Divider()
                     .padding(.leading, 60)
-                
+
                 SettingsRow(
                     icon: "info.circle.fill",
-                    title: "About Aqua",
+                    title: localizationManager.localizedString(for: "about_aqua"),
                     subtitle: "Version \(profileManager.profile.appVersion)"
                 ) {
                     // Handle about action
                 }
-                
+
                 Divider()
                     .padding(.leading, 60)
-                
+
                 SettingsRow(
                     icon: "rectangle.portrait.and.arrow.right",
-                    title: "Sign Out",
-                    subtitle: "Log out of your account",
+                    title: localizationManager.localizedString(for: "sign_out"),
+                    subtitle: localizationManager.localizedString(for: "log_out_account"),
                     isDestructive: true
                 ) {
                     // Handle sign out
@@ -264,12 +281,13 @@ struct SettingsRow: View {
 struct EditProfileView: View {
     @Binding var profile: UserProfile
     @Environment(\.dismiss) private var dismiss
-    
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+
     @State private var editedName: String = ""
     @State private var editedMobile: String = ""
     @State private var editedAddress: String = ""
     @State private var editedPincode: String = ""
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
@@ -280,7 +298,7 @@ struct EditProfileView: View {
                             Circle()
                                 .fill(Color.oceanBlue.opacity(0.1))
                                 .frame(width: 100, height: 100)
-                            
+
                             Image(systemName: "person.fill")
                                 .font(.system(size: 40))
                                 .foregroundColor(.oceanBlue)
@@ -289,63 +307,63 @@ struct EditProfileView: View {
                             Circle()
                                 .stroke(Color.oceanBlue, lineWidth: 2)
                         )
-                        
-                        Button("Change Photo") {
+
+                        Button(localizationManager.localizedString(for: "change_photo")) {
                             // Handle photo change
                         }
                         .font(.caption)
                         .foregroundColor(.oceanBlue)
                     }
                     .padding(.top, 20)
-                    
+
                     // Edit Form
                     VStack(spacing: 20) {
                         // Name Field
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Full Name")
+                            Text(localizationManager.localizedString(for: "full_name"))
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                                 .foregroundColor(.primary)
-                            
-                            TextField("Enter your name", text: $editedName)
+
+                            TextField(localizationManager.localizedString(for: "enter_name"), text: $editedName)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .font(.body)
                         }
-                        
+
                         // Mobile Field
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Mobile Number")
+                            Text(localizationManager.localizedString(for: "mobile_number"))
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                                 .foregroundColor(.primary)
-                            
-                            TextField("Enter your mobile number", text: $editedMobile)
+
+                            TextField(localizationManager.localizedString(for: "enter_mobile"), text: $editedMobile)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .keyboardType(.phonePad)
                                 .font(.body)
                         }
-                        
+
                         // Address Field
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Address")
+                            Text(localizationManager.localizedString(for: "address"))
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                                 .foregroundColor(.primary)
-                            
-                            TextField("Enter your address", text: $editedAddress, axis: .vertical)
+
+                            TextField(localizationManager.localizedString(for: "enter_address"), text: $editedAddress, axis: .vertical)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .lineLimit(3...5)
                                 .font(.body)
                         }
-                        
+
                         // Pincode Field
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Pincode")
+                            Text(localizationManager.localizedString(for: "pincode"))
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                                 .foregroundColor(.primary)
-                            
-                            TextField("Enter pincode", text: $editedPincode)
+
+                            TextField(localizationManager.localizedString(for: "enter_pincode"), text: $editedPincode)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .keyboardType(.numberPad)
                                 .font(.body)
@@ -355,16 +373,16 @@ struct EditProfileView: View {
                 }
                 .padding(.bottom, 40)
             }
-            .navigationTitle("Edit Profile")
+            .navigationTitle(localizationManager.localizedString(for: "edit_profile"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button(localizationManager.localizedString(for: "cancel")) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button(localizationManager.localizedString(for: "save")) {
                         saveProfile()
                         dismiss()
                     }
@@ -394,27 +412,191 @@ struct EditProfileView: View {
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
-    
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+
     var body: some View {
         NavigationView {
             VStack {
-                Text("Settings")
+                Text(localizationManager.localizedString(for: "settings"))
                     .font(.title)
                 Spacer()
-                Text("Settings functionality coming soon...")
+                Text(localizationManager.localizedString(for: "settings_coming_soon"))
                     .foregroundColor(.secondary)
                 Spacer()
             }
-            .navigationTitle("Settings")
+            .navigationTitle(localizationManager.localizedString(for: "settings"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button(localizationManager.localizedString(for: "done")) {
                         dismiss()
                     }
                 }
             }
         }
+    }
+}
+
+// MARK: - Language Settings Row
+struct LanguageSettingsRow: View {
+    let icon: String
+    let title: String
+    let currentLanguage: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundColor(.oceanBlue)
+                    .frame(width: 24)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.primary)
+
+                    Text(currentLanguage)
+                        .font(.caption)
+                        .foregroundColor(.oceanBlue)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 12)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Language Picker View
+struct LanguagePickerView: View {
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+
+    let languages = [
+        ("English", "English", "🇺🇸"),
+        ("हिन्दी", "Hindi", "🇮🇳"),
+        ("বাংলা", "Bengali", "🇧🇩")
+    ]
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 0) {
+                // Header
+                VStack(spacing: 8) {
+                    Image(systemName: "globe")
+                        .font(.system(size: 50))
+                        .foregroundColor(.oceanBlue)
+                        .padding(.top, 30)
+
+                    Text(localizationManager.localizedString(for: "choose_language"))
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.deepOcean)
+
+                    Text(localizationManager.localizedString(for: "select_preferred_language"))
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .padding(.bottom, 20)
+                }
+
+                // Language Options
+                VStack(spacing: 12) {
+                    ForEach(languages, id: \.0) { language in
+                        LanguageOptionButton(
+                            nativeName: language.0,
+                            englishName: language.1,
+                            flag: language.2,
+                            isSelected: localizationManager.currentLanguage == language.0
+                        ) {
+                            withAnimation(.spring(response: 0.3)) {
+                                localizationManager.setLanguage(language.0)
+                            }
+                            // Dismiss after a short delay to show the selection
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                dismiss()
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, 24)
+
+                Spacer()
+            }
+            .background(
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.subtleBlueLight, Color.white]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(localizationManager.localizedString(for: "done")) {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Language Option Button
+struct LanguageOptionButton: View {
+    let nativeName: String
+    let englishName: String
+    let flag: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                Text(flag)
+                    .font(.system(size: 32))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(nativeName)
+                        .font(.headline)
+                        .foregroundColor(isSelected ? .oceanBlue : .primary)
+
+                    Text(englishName)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.oceanBlue)
+                } else {
+                    Circle()
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 2)
+                        .frame(width: 24, height: 24)
+                }
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(isSelected ? Color.oceanBlue.opacity(0.1) : Color.white)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(isSelected ? Color.oceanBlue : Color.gray.opacity(0.2), lineWidth: isSelected ? 2 : 1)
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
 

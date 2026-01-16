@@ -10,6 +10,7 @@ import SwiftUI
 struct MarketplaceView: View {
     @EnvironmentObject private var cartManager: CartManager
     @EnvironmentObject private var profileManager: UserProfileManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var selectedCategory: ProductCategory?
     @State private var searchText = ""
     @State private var showingCart = false
@@ -65,13 +66,13 @@ struct MarketplaceView: View {
                 endPoint: .bottomTrailing
             )
         )
-        .navigationTitle("Marketplace")
+        .navigationTitle(localizationManager.localizedString(for: "marketplace"))
         .navigationBarTitleDisplayMode(.large)
     }
     
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Quality supplies for your aquaculture")
+            Text(localizationManager.localizedString(for: "quality_supplies"))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -79,13 +80,13 @@ struct MarketplaceView: View {
         .padding(.horizontal)
         .padding(.top, 8)
     }
-    
+
     private var searchBar: some View {
         HStack {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
-            
-            TextField("Search products...", text: $searchText)
+
+            TextField(localizationManager.localizedString(for: "search_products"), text: $searchText)
                 .textFieldStyle(.plain)
             
             if !searchText.isEmpty {
@@ -106,7 +107,7 @@ struct MarketplaceView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
                 CategoryChip(
-                    title: "All",
+                    title: localizationManager.localizedString(for: "all"),
                     icon: "square.grid.2x2.fill",
                     isSelected: selectedCategory == nil
                 ) {
@@ -150,9 +151,9 @@ struct MarketplaceView: View {
             HStack(spacing: 12) {
                 Image(systemName: "cart.fill")
                     .font(.title3)
-                
+
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("\(cartManager.totalItems) items")
+                    Text("\(cartManager.totalItems) \(localizationManager.localizedString(for: "items"))")
                         .font(.caption)
                         .fontWeight(.medium)
                     Text(cartManager.formattedTotal)
@@ -214,8 +215,9 @@ struct CategoryChip: View {
 struct MarketplaceProductCard: View {
     let product: MarketplaceProduct
     @ObservedObject var cartManager: CartManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var showingDetail = false
-    
+
     var body: some View {
         Button {
             showingDetail = true
@@ -231,7 +233,7 @@ struct MarketplaceProductCard: View {
                                 endPoint: .bottomTrailing
                             )
                         )
-                    
+
                     Image(systemName: product.imageName)
                         .font(.system(size: 32))
                         .foregroundStyle(Color.oceanBlue)
@@ -239,7 +241,7 @@ struct MarketplaceProductCard: View {
                 .frame(height: 120)
                 .overlay(alignment: .topTrailing) {
                     if !product.inStock {
-                        Text("Out of Stock")
+                        Text(localizationManager.localizedString(for: "out_of_stock"))
                             .font(.caption2)
                             .fontWeight(.semibold)
                             .padding(.horizontal, 8)

@@ -4,12 +4,13 @@ import SwiftUI
 struct DashboardView: View {
     @EnvironmentObject var tankManager: TankManager
     @EnvironmentObject var cartManager: CartManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var environmentalData = EnvironmentalData.sample
     @State private var showingAddTank = false
     @State private var showingWeatherDetails = false
     @State private var showingVoiceBot = false
     @Namespace private var namespace
-    
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -19,26 +20,26 @@ struct DashboardView: View {
                         QuickStatCard(
                             icon: "fish.fill",
                             value: "\(tankManager.tankCount)",
-                            label: "Active Tanks",
+                            label: localizationManager.localizedString(for: "active_tanks"),
                             color: .oceanBlue
                         )
-                        
+
                         QuickStatCard(
                             icon: "drop.fill",
                             value: String(format: "%.1f", tankManager.totalVolume) + "m³",
-                            label: "Total Volume",
+                            label: localizationManager.localizedString(for: "total_volume"),
                             color: .oceanBlue
                         )
-                        
+
                         QuickStatCard(
                             icon: "thermometer.medium",
                             value: "\(Int(environmentalData.airTemperature))°C",
-                            label: "Avg Temp",
+                            label: localizationManager.localizedString(for: "avg_temp"),
                             color: .oceanBlue
                         )
                     }
                     .padding(.horizontal)
-                    
+
                     // Environmental Conditions Card (tappable)
                     Button {
                         showingWeatherDetails = true
@@ -47,33 +48,58 @@ struct DashboardView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                     .padding(.horizontal)
-                    
+                    .onBoarding(2) {
+                        TutorialContentView(
+                            title: localizationManager.localizedString(for: "environmental_conditions"),
+                            description: localizationManager.localizedString(for: "env_conditions_desc"),
+                            icon: "thermometer.sun.fill"
+                        )
+                    }
+
                     // Water Quality Metrics Grid
                     WaterQualityMetricsView()
                         .padding(.horizontal)
-                    
-                    // My Tanks Section
-                    VStack(spacing: 16) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("My Tanks")
-                                    .font(.system(size: 28, weight: .bold))
-                                    .foregroundColor(.deepOcean)
-                                Text("Monitor your aquaculture systems")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.mediumGray)
-                            }
-                            Spacer()
+                        .onBoarding(3) {
+                            TutorialContentView(
+                                title: localizationManager.localizedString(for: "tank_health_metrics"),
+                                description: localizationManager.localizedString(for: "tank_health_desc"),
+                                icon: "waveform.path.ecg"
+                            )
                         }
-                        .padding(.horizontal)
-                        
-                        // Tank Cards
+
+                    // My Tanks Section
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(localizationManager.localizedString(for: "my_tanks"))
+                                .font(.system(size: 28, weight: .bold))
+                                .foregroundColor(.deepOcean)
+                            Text(localizationManager.localizedString(for: "monitor_aquaculture"))
+                                .font(.system(size: 16))
+                                .foregroundColor(.mediumGray)
+                        }
+                        Spacer()
+                        Button {
+                            showingAddTank = true
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundColor(.oceanBlue)
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal)
+                    
+                    // Tank Cards
+                    VStack(spacing: 16) {
                         ForEach(tankManager.tanks) { tank in
                             NavigationLink(destination: TankView(tank: tank)) {
                                 TankCard(tank: tank)
-                                    .padding(.horizontal)
+                                    .contentShape(Rectangle())
                             }
                             .buttonStyle(PlainButtonStyle())
+                            .padding(.horizontal)
                         }
                     }
                 }
@@ -91,24 +117,20 @@ struct DashboardView: View {
             .navigationBarTitleDisplayMode(.large) // Enables the large title that collapses on scroll
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    HStack(spacing: 8) {
-                        Button {
-                            showingVoiceBot = true
-                        } label: {
-                            Image(systemName: "mic.circle.fill")
-                                .font(.title3)
-                                .foregroundColor(.oceanBlue)
-                        }
-                        .matchedTransitionSource(id: "voiceBotTransition", in: namespace)
-                        
-                        Button {
-                            showingAddTank = true
-                        } label: {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.title3)
-                                .foregroundColor(.oceanBlue)
-                        }
-                        .matchedTransitionSource(id: "newTankTransition", in: namespace)
+                    Button {
+                        showingVoiceBot = true
+                    } label: {
+                        Image(systemName: "mic.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.oceanBlue)
+                    }
+                    .matchedTransitionSource(id: "voiceBotTransition", in: namespace)
+                    .onBoarding(1) {
+                        TutorialContentView(
+                            title: localizationManager.localizedString(for: "voice_assistant"),
+                            description: localizationManager.localizedString(for: "voice_assistant_desc"),
+                            icon: "mic.fill"
+                        )
                     }
                 }
             }
@@ -116,9 +138,8 @@ struct DashboardView: View {
                 NavigationStack {
                     AddTankView(tanks: $tankManager.tanks)
                 }
-                .presentationDetents([.large])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
-                .navigationTransition(.zoom(sourceID: "newTankTransition", in: namespace))
             }
             .sheet(isPresented: $showingVoiceBot) {
                 VoiceBotView()
@@ -176,7 +197,8 @@ struct QuickStatCard: View {
 // MARK: - Environmental Card
 struct EnvironmentalCard: View {
     let data: EnvironmentalData
-    
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
@@ -195,7 +217,7 @@ struct EnvironmentalCard: View {
                     Image(systemName: data.icon)
                         .font(.system(size: 36))
                         .foregroundColor(.oceanBlue)
-                    
+
                     VStack(alignment: .leading, spacing: 0) {
                         Text("\(Int(data.airTemperature))°")
                             .font(.system(size: 48, weight: .bold))
@@ -205,14 +227,14 @@ struct EnvironmentalCard: View {
                             .foregroundColor(.mediumGray)
                     }
                 }
-                
+
                 Spacer()
-                
+
                 // Environmental metrics - compact
                 HStack(spacing: 20) {
-                    MetricColumn(icon: "humidity.fill", value: "\(Int(data.humidity))%", label: "Humidity")
-                    MetricColumn(icon: "drop.fill", value: "\(Int(data.precipitation))%", label: "Rain")
-                    
+                    MetricColumn(icon: "humidity.fill", value: "\(Int(data.humidity))%", label: localizationManager.localizedString(for: "humidity"))
+                    MetricColumn(icon: "drop.fill", value: "\(Int(data.precipitation))%", label: localizationManager.localizedString(for: "rain"))
+
                     Image(systemName: "chevron.right")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.mediumGray)
@@ -247,15 +269,19 @@ struct MetricColumn: View {
 
 // MARK: - Water Quality Metrics View
 struct WaterQualityMetricsView: View {
-    let metrics = [
-        ("drop.fill", "pH Level", "7.5", "Optimal", Color.aquaGreen),
-        ("thermometer.medium", "Water Temp", "16.2°C", "Optimal", Color.aquaGreen),
-        ("bubbles.and.sparkles.fill", "Dissolved O₂", "7.2 mg/L", "On Track", Color.aquaYellow),
-        ("leaf.fill", "Ammonia", "0.06 mg/L", "Normal", Color.oceanBlue),
-        ("water.waves", "Salinity", "32.5 ppt", "Consider", Color.aquaYellow),
-        ("eye.fill", "Turbidity", "3.1 NTU", "Caution", Color.aquaYellow)
-    ]
-    
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+
+    var metrics: [(String, String, String, String, Color)] {
+        [
+            ("drop.fill", localizationManager.localizedString(for: "ph_level"), "7.5", localizationManager.localizedString(for: "optimal"), Color.aquaGreen),
+            ("thermometer.medium", localizationManager.localizedString(for: "water_temp"), "16.2°C", localizationManager.localizedString(for: "optimal"), Color.aquaGreen),
+            ("bubbles.and.sparkles.fill", localizationManager.localizedString(for: "dissolved_o2"), "7.2 mg/L", localizationManager.localizedString(for: "on_track"), Color.aquaYellow),
+            ("leaf.fill", localizationManager.localizedString(for: "ammonia"), "0.06 mg/L", localizationManager.localizedString(for: "normal"), Color.oceanBlue),
+            ("water.waves", localizationManager.localizedString(for: "salinity"), "32.5 ppt", localizationManager.localizedString(for: "consider"), Color.aquaYellow),
+            ("eye.fill", localizationManager.localizedString(for: "turbidity"), "3.1 NTU", localizationManager.localizedString(for: "caution"), Color.aquaYellow)
+        ]
+    }
+
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
@@ -269,10 +295,10 @@ struct WaterQualityMetricsView: View {
                 .shadow(color: Color.oceanBlue.opacity(0.08), radius: 10, x: 0, y: 5)
 
             VStack(alignment: .leading, spacing: 16) {
-                Text("Tank Conditions")
+                Text(localizationManager.localizedString(for: "tank_conditions"))
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(.deepOcean)
-                
+
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                     ForEach(metrics, id: \.1) { metric in
                         WaterMetricCard(
@@ -339,7 +365,8 @@ struct WaterMetricCard: View {
 // MARK: - Tank Card
 struct TankCard: View {
     let tank: Tank
-    
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+
     var body: some View {
         ZStack {
             Group {
@@ -354,7 +381,7 @@ struct TankCard: View {
             }
             .frame(height: 240)
             .clipped()
-            
+
             LinearGradient(
                 gradient: Gradient(colors: [
                     Color.clear,
@@ -364,7 +391,7 @@ struct TankCard: View {
                 startPoint: .top,
                 endPoint: .bottom
             )
-            
+
             VStack {
                 // AI Analytics Button - Top Right
                 HStack {
@@ -373,9 +400,9 @@ struct TankCard: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
-                
+
                 Spacer()
-                
+
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
@@ -383,19 +410,19 @@ struct TankCard: View {
                                 .font(.title2)
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
-                            
+
                             Text("\(tank.dimensions.volume, specifier: "%.1f")m³")
                                 .font(.subheadline)
                                 .foregroundColor(.white.opacity(0.9))
                         }
-                        
+
                         Spacer()
-                        
+
                         VStack(alignment: .trailing, spacing: 4) {
-                            Text("Current Stage")
+                            Text(localizationManager.localizedString(for: "current_stage"))
                                 .font(.caption)
                                 .foregroundColor(.white.opacity(0.8))
-                            
+
                             Text(tank.currentStage)
                                 .font(.caption)
                                 .fontWeight(.medium)

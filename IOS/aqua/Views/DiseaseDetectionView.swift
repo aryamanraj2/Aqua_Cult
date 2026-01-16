@@ -6,6 +6,7 @@ import PhotosUI
 
 struct DiseaseDetectionView: View {
     @StateObject private var cameraController = CameraController()
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var capturedImage: UIImage?
     @State private var predictionResult: DiseaseResult?
     @State private var isAnalyzing = false
@@ -13,7 +14,7 @@ struct DiseaseDetectionView: View {
     @State private var errorMessage: String?
     @State private var showResults = false
     @State private var showResultsSheet = false
-    
+
     var body: some View {
         ZStack {
             // Full-screen camera preview
@@ -25,22 +26,22 @@ struct DiseaseDetectionView: View {
                 cameraController: cameraController
             )
             .ignoresSafeArea()
-            
+
             // Overlay UI
             VStack {
                 // Top section with title
                 VStack(spacing: 8) {
-                    Text("Disease Detection")
+                    Text(localizationManager.localizedString(for: "disease_detection"))
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.white)
                         .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
-                    
-                    Text("Point camera at any fish.")
+
+                    Text(localizationManager.localizedString(for: "point_camera"))
                         .font(.system(size: 16))
                         .foregroundColor(.white.opacity(0.9))
                         .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
-                    
-                    Text("AI will analyze it instantly.")
+
+                    Text(localizationManager.localizedString(for: "ai_analyze"))
                         .font(.system(size: 16))
                         .foregroundColor(.white.opacity(0.9))
                         .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
@@ -165,17 +166,19 @@ struct DiseaseDetectionView: View {
 // MARK: - Overlay Views
 
 struct AnalyzingOverlay: View {
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+
     var body: some View {
         ZStack {
             Color.black.opacity(0.7)
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 20) {
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle(tint: .subtleBlueAccent))
                     .scaleEffect(1.5)
-                
-                Text("Analyzing fish...")
+
+                Text(localizationManager.localizedString(for: "analyzing_fish"))
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white)
             }
@@ -202,6 +205,7 @@ struct ResultsSheetView: View {
     let result: DiseaseResult
     let onDismiss: () -> Void
     @EnvironmentObject private var cartManager: CartManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var showCart = false
 
     var body: some View {
@@ -211,18 +215,18 @@ struct ResultsSheetView: View {
                         VStack(alignment: .leading, spacing: 20) {
                             // Header
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Analysis Complete")
+                                Text(localizationManager.localizedString(for: "analysis_complete"))
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(.mediumGray)
-                                
+
                                 Text(result.diseaseName)
                                     .font(.system(size: 26, weight: .bold))
                                     .foregroundColor(.deepOcean)
                             }
-                            
+
                             // Confidence badge
                             HStack {
-                                Text("\(Int(result.confidence * 100))% Confidence")
+                                Text("\(Int(result.confidence * 100))% \(localizationManager.localizedString(for: "confidence"))")
                                     .font(.system(size: 14, weight: .semibold))
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
@@ -238,37 +242,37 @@ struct ResultsSheetView: View {
                                     )
                                     .foregroundColor(confidenceColor)
                                     .cornerRadius(8)
-                                
+
                                 Spacer()
                             }
-                            
+
                             // Description
                             if !result.description.isEmpty {
                                 VStack(alignment: .leading, spacing: 8) {
-                                    Text("About")
+                                    Text(localizationManager.localizedString(for: "about"))
                                         .font(.system(size: 20, weight: .semibold))
                                         .foregroundColor(.deepOcean)
-                                    
+
                                     Text(result.description)
                                         .font(.system(size: 14))
                                         .foregroundColor(.mediumGray)
                                         .lineSpacing(4)
                                 }
                             }
-                            
+
                             // Recommendations
                             if !result.recommendations.isEmpty {
                                 VStack(alignment: .leading, spacing: 12) {
-                                    Text("Recommendations")
+                                    Text(localizationManager.localizedString(for: "recommendations"))
                                         .font(.system(size: 20, weight: .semibold))
                                         .foregroundColor(.deepOcean)
-                                    
+
                                     ForEach(result.recommendations, id: \.self) { recommendation in
                                         HStack(alignment: .top, spacing: 12) {
                                             Image(systemName: "checkmark.circle.fill")
                                                 .foregroundColor(.oceanBlue)
                                                 .font(.system(size: 16))
-                                            
+
                                             Text(recommendation)
                                                 .font(.system(size: 14))
                                                 .foregroundColor(.mediumGray)
@@ -277,14 +281,14 @@ struct ResultsSheetView: View {
                                     }
                                 }
                             }
-                            
+
                             // Recommended Products
                             if !result.recommendedProducts.isEmpty {
                                 VStack(alignment: .leading, spacing: 12) {
-                                    Text("Recommended Products")
+                                    Text(localizationManager.localizedString(for: "recommended_products"))
                                         .font(.system(size: 20, weight: .semibold))
                                         .foregroundColor(.deepOcean)
-                                    
+
                                     ForEach(result.recommendedProducts) { product in
                                         DiseaseProductCard(product: product)
                                     }
@@ -300,11 +304,11 @@ struct ResultsSheetView: View {
                     endPoint: .bottom
                 )
             )
-            .navigationTitle("Disease Analysis")
+            .navigationTitle(localizationManager.localizedString(for: "disease_analysis"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button(localizationManager.localizedString(for: "done")) {
                         onDismiss()
                     }
                 }
@@ -346,9 +350,9 @@ struct ResultsSheetView: View {
             HStack(spacing: 12) {
                 Image(systemName: "cart.fill")
                     .font(.title3)
-                
+
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("\(cartManager.totalItems) items")
+                    Text("\(cartManager.totalItems) \(localizationManager.localizedString(for: "items"))")
                         .font(.caption)
                         .fontWeight(.medium)
                     Text(cartManager.formattedTotal)
@@ -378,29 +382,30 @@ struct ResultsSheetView: View {
 struct ErrorOverlay: View {
     let message: String
     let onDismiss: () -> Void
-    
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+
     var body: some View {
         ZStack {
             Color.black.opacity(0.7)
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 20) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: 50))
                     .foregroundColor(.aquaRed)
-                
-                Text("Analysis Failed")
+
+                Text(localizationManager.localizedString(for: "analysis_failed"))
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(.white)
-                
+
                 Text(message)
                     .font(.system(size: 14))
                     .foregroundColor(.white.opacity(0.9))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
-                
+
                 Button(action: onDismiss) {
-                    Text("Try Again")
+                    Text(localizationManager.localizedString(for: "try_again"))
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(width: 200, height: 50)
@@ -496,12 +501,13 @@ struct ImagePicker: UIViewControllerRepresentable {
 struct DiseaseProductCard: View {
     let product: MarketplaceProduct
     @EnvironmentObject private var cartManager: CartManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var dragAmount = CGSize.zero
-    
+
     private var currentQuantity: Int {
         cartManager.getQuantity(for: product)
     }
-    
+
     var body: some View {
         VStack(spacing: 12) {
             HStack(spacing: 14) {
@@ -519,36 +525,36 @@ struct DiseaseProductCard: View {
                             )
                         )
                         .frame(width: 50, height: 50)
-                    
+
                     Image(systemName: product.imageName)
                         .font(.system(size: 24))
                         .foregroundColor(.oceanBlue)
                 }
-                
+
                 // Content
                 VStack(alignment: .leading, spacing: 4) {
                     Text(product.name)
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.deepOcean)
-                    
+
                     Text(product.description)
                         .font(.system(size: 12))
                         .foregroundColor(.mediumGray)
                         .lineLimit(2)
-                    
+
                     HStack {
                         Text(product.formattedPrice)
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.oceanBlue)
-                        
+
                         Text("per \(product.unit)")
                             .font(.system(size: 11))
                             .foregroundColor(.mediumGray)
-                        
+
                         Spacer()
-                        
+
                         if !product.inStock {
-                            Text("Out of Stock")
+                            Text(localizationManager.localizedString(for: "out_of_stock"))
                                 .font(.system(size: 10, weight: .medium))
                                 .foregroundColor(.aquaRed)
                                 .padding(.horizontal, 6)
@@ -559,7 +565,7 @@ struct DiseaseProductCard: View {
                                 )
                         }
                     }
-                    
+
                     // Rating
                     HStack(spacing: 2) {
                         ForEach(1...5, id: \.self) { star in
@@ -572,10 +578,10 @@ struct DiseaseProductCard: View {
                             .foregroundColor(.mediumGray)
                     }
                 }
-                
+
                 Spacer()
             }
-            
+
             // Swipe Quantity Control
             HStack {
                 // Decrease indicator (swipe right to decrease)
@@ -589,21 +595,21 @@ struct DiseaseProductCard: View {
                         .opacity(dragAmount.width > 30 ? 1.0 : 0.5)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                
+
                 // Current quantity display
                 VStack(spacing: 2) {
                     if currentQuantity > 0 {
                         Text("\(currentQuantity)")
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(.oceanBlue)
-                        Text("in cart")
+                        Text(localizationManager.localizedString(for: "in_cart"))
                             .font(.system(size: 10))
                             .foregroundColor(.mediumGray)
                     } else {
                         Text("0")
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(.lightGray)
-                        Text("Add to cart")
+                        Text(localizationManager.localizedString(for: "add_to_cart"))
                             .font(.system(size: 10))
                             .foregroundColor(.mediumGray)
                     }
