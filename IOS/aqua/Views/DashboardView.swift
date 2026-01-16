@@ -4,6 +4,7 @@ import SwiftUI
 struct DashboardView: View {
     @EnvironmentObject var tankManager: TankManager
     @EnvironmentObject var cartManager: CartManager
+    @EnvironmentObject var profileManager: UserProfileManager
     @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var environmentalData = EnvironmentalData.sample
     @State private var showingAddTank = false

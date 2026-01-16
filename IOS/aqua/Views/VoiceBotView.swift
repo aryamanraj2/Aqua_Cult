@@ -113,48 +113,49 @@ struct VoiceBotView: View {
                                     .padding(.horizontal, 40)
                             }
 
-                        Spacer()
-                    }
-                    .transition(.opacity)
-                } else {
-                    // Message list
-                    ImprovedConversationView(
-                        messages: voiceBotManager.conversationHistory,
-                        isProcessing: voiceBotManager.isProcessing,
-                        cartManager: cartManager,
-                        voiceBotManager: voiceBotManager
-                    )
-                }
-
-                // Error display
-                if let error = voiceBotManager.error {
-                    HStack(spacing: 12) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.red)
-                        Text(error)
-                            .font(.caption)
-                            .foregroundStyle(.white)
-                        Spacer()
-                        Button("Dismiss") {
-                            voiceBotManager.error = nil
+                            Spacer()
                         }
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.cyan)
+                        .transition(.opacity)
+                    } else {
+                        // Message list
+                        ImprovedConversationView(
+                            messages: voiceBotManager.conversationHistory,
+                            isProcessing: voiceBotManager.isProcessing,
+                            cartManager: cartManager,
+                            voiceBotManager: voiceBotManager
+                        )
                     }
-                    .padding()
-                    .background(.red.opacity(0.2))
-                    .cornerRadius(12)
-                    .padding(.horizontal)
-                }
 
-                // Voice control button
-                LiquidRecordButton(
-                    isRecording: voiceBotManager.isRecording,
-                    isProcessing: voiceBotManager.isProcessing,
-                    action: { handleRecordingAction() }
-                )
-                .padding(.horizontal, 20)
-                .padding(.bottom, 24)
+                    // Error display
+                    if let error = voiceBotManager.error {
+                        HStack(spacing: 12) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.red)
+                            Text(error)
+                                .font(.caption)
+                                .foregroundStyle(.white)
+                            Spacer()
+                            Button("Dismiss") {
+                                voiceBotManager.error = nil
+                            }
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.cyan)
+                        }
+                        .padding()
+                        .background(.red.opacity(0.2))
+                        .cornerRadius(12)
+                        .padding(.horizontal)
+                    }
+
+                    // Voice control button
+                    LiquidRecordButton(
+                        isRecording: voiceBotManager.isRecording,
+                        isProcessing: voiceBotManager.isProcessing,
+                        action: { handleRecordingAction() }
+                    )
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 24)
+                }
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
