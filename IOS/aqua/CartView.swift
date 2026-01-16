@@ -11,8 +11,9 @@ struct CartView: View {
     @ObservedObject var cartManager: CartManager
     let userProfile: UserProfile
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var showingCheckout = false
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -22,7 +23,7 @@ struct CartView: View {
                     cartContent
                 }
             }
-            .navigationTitle("Shopping Cart")
+            .navigationTitle(localizationManager.localizedString(for: "shopping_cart"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -48,19 +49,19 @@ struct CartView: View {
             Image(systemName: "cart")
                 .font(.system(size: 60))
                 .foregroundStyle(.secondary)
-            
-            Text("Your cart is empty")
+
+            Text(localizationManager.localizedString(for: "cart_empty"))
                 .font(.title2)
                 .fontWeight(.semibold)
-            
-            Text("Add some products to get started")
+
+            Text(localizationManager.localizedString(for: "add_products_start"))
                 .font(.body)
                 .foregroundStyle(.secondary)
-            
+
             Button {
                 dismiss()
             } label: {
-                Text("Continue Shopping")
+                Text(localizationManager.localizedString(for: "continue_shopping"))
                     .font(.headline)
                     .foregroundStyle(.white)
                     .padding(.horizontal, 24)
@@ -91,27 +92,27 @@ struct CartView: View {
     private var cartSummary: some View {
         VStack(spacing: 0) {
             Divider()
-            
+
             VStack(spacing: 12) {
                 HStack {
-                    Text("Subtotal")
+                    Text(localizationManager.localizedString(for: "subtotal"))
                         .foregroundStyle(.secondary)
                     Spacer()
                     Text(cartManager.formattedSubtotal)
                         .fontWeight(.medium)
                 }
-                
+
                 HStack {
-                    Text("GST (18%)")
+                    Text(localizationManager.localizedString(for: "gst"))
                         .foregroundStyle(.secondary)
                     Spacer()
                     Text(cartManager.formattedGST)
                         .fontWeight(.medium)
                 }
-                
+
                 HStack {
                     HStack(spacing: 4) {
-                        Text("Shipping")
+                        Text(localizationManager.localizedString(for: "shipping"))
                             .foregroundStyle(.secondary)
                         if cartManager.shippingFee == 0 {
                             Image(systemName: "checkmark.circle.fill")
@@ -124,19 +125,19 @@ struct CartView: View {
                         .fontWeight(.medium)
                         .foregroundStyle(cartManager.shippingFee == 0 ? .green : .primary)
                 }
-                
+
                 if cartManager.subtotal < 10000 {
-                    Text("Add ₹\(String(format: "%.0f", 10000 - cartManager.subtotal)) more for free shipping")
+                    Text("\(localizationManager.localizedString(for: "add_more_free_shipping")) ₹\(String(format: "%.0f", 10000 - cartManager.subtotal))")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }
-                
+
                 Divider()
                     .padding(.vertical, 4)
-                
+
                 HStack {
-                    Text("Total")
+                    Text(localizationManager.localizedString(for: "total"))
                         .font(.headline)
                     Spacer()
                     Text(cartManager.formattedTotal)
@@ -144,12 +145,12 @@ struct CartView: View {
                         .fontWeight(.bold)
                         .foregroundStyle(Color.oceanBlue)
                 }
-                
+
                 Button {
                     showingCheckout = true
                 } label: {
                     HStack {
-                        Text("Proceed to Checkout")
+                        Text(localizationManager.localizedString(for: "proceed_checkout"))
                             .font(.headline)
                         Image(systemName: "arrow.right")
                     }

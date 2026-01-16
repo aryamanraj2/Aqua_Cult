@@ -11,6 +11,7 @@ struct ContentView: View {
     @StateObject private var tankManager = TankManager()
     @StateObject private var profileManager = UserProfileManager()
     @StateObject private var cartManager = CartManager()
+    @ObservedObject private var localizationManager = LocalizationManager.shared
 
     var body: some View {
         OneTimeOnBoarding(appStorageID: "AquaSense_Tutorial") {
@@ -22,32 +23,32 @@ struct ContentView: View {
                         .environmentObject(cartManager)
                 }
                 .tabItem {
-                    Label("Dashboard", systemImage: "fish.fill")
+                    Label(localizationManager.localizedString(for: "tab_dashboard"), systemImage: "fish.fill")
                 }
-                
+
                 NavigationStack {
                     DiseaseDetectionView()
                         .environmentObject(profileManager)
                 }
                 .tabItem {
-                    Label("Disease", systemImage: "cross.case.fill")
+                    Label(localizationManager.localizedString(for: "tab_disease"), systemImage: "cross.case.fill")
                 }
-                
+
                 NavigationStack {
                     MarketplaceView()
                         .environmentObject(profileManager)
                 }
                 .tabItem {
-                    Label("Market", systemImage: "cart.fill")
+                    Label(localizationManager.localizedString(for: "tab_market"), systemImage: "cart.fill")
                 }
-                
+
                 NavigationStack {
                     ProfileView()
                         .environmentObject(tankManager)
                         .environmentObject(profileManager)
                 }
                 .tabItem {
-                    Label("Profile", systemImage: "person.fill")
+                    Label(localizationManager.localizedString(for: "tab_profile"), systemImage: "person.fill")
                 }
             }
             .tint(.oceanBlue)
