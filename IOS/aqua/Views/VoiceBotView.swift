@@ -102,11 +102,13 @@ struct VoiceBotView: View {
                                 .symbolEffect(.pulse, options: .repeating)
 
                             VStack(spacing: 8) {
-                                Text("Tap to speak")
+                                Text(languageManager.currentLanguage == .hindi ? "बोलने के लिए टैप करें" : "Tap to speak")
                                     .font(.system(size: 18, weight: .medium))
                                     .foregroundStyle(.white.opacity(0.6))
 
-                                Text("Ask about water quality, feeding schedules,\nor get product recommendations")
+                                Text(languageManager.currentLanguage == .hindi 
+                                     ? "पानी की गुणवत्ता, खिलाने के कार्यक्रम के बारे में पूछें,\nया उत्पाद सुझाव प्राप्त करें"
+                                     : "Ask about water quality, feeding schedules,\nor get product recommendations")
                                     .font(.system(size: 14, weight: .regular))
                                     .foregroundStyle(.white.opacity(0.4))
                                     .multilineTextAlignment(.center)
@@ -175,14 +177,21 @@ struct VoiceBotView: View {
                         } label: {
                             HStack(spacing: 4) {
                                 Image(systemName: "globe")
-                                    .font(.system(size: 12, weight: .semibold))
+                                    .font(.system(size: 14, weight: .semibold))
                                 Text(languageManager.currentLanguage == .english ? "EN" : "HI")
-                                    .font(.system(size: 11, weight: .bold))
+                                    .font(.system(size: 13, weight: .bold))
                             }
                             .foregroundStyle(.white)
-                            .frame(width: 50, height: 32)
-                            .background(.ultraThinMaterial)
-                            .clipShape(Capsule())
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule()
+                                    .fill(.white.opacity(0.25))
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(.white.opacity(0.4), lineWidth: 1)
+                                    )
+                            )
                         }
 
                         // Clear conversation button

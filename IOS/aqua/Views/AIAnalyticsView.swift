@@ -13,6 +13,10 @@ struct AIAnalyticsView: View {
     @State private var errorMessage: String?
     @State private var showCart = false
     
+    // SMS Notification States
+    @State private var smsStatus: SMSStatus = .idle
+    @State private var showSMSBanner = false
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -46,6 +50,22 @@ struct AIAnalyticsView: View {
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 8)
+                
+                // SMS Status Banner Overlay
+                if showSMSBanner {
+                    VStack {
+                        SMSStatusBanner(status: smsStatus) {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                showSMSBanner = false
+                            }
+                        }
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .padding(.top, 60)
+                        
+                        Spacer()
+                    }
+                    .zIndex(100)
+                }
             }
             .navigationTitle("AI Tank Analysis")
             .navigationBarTitleDisplayMode(.inline)
@@ -131,10 +151,40 @@ struct AIAnalyticsView: View {
                     analysis = result
                     isLoading = false
                 }
+                
+                // Send SMS notification after successful analysis
+                await sendSMSNotification(for: result)
+                
             } catch {
                 await MainActor.run {
                     errorMessage = error.localizedDescription
                     isLoading = false
+                }
+            }
+        }
+    }
+    
+    private func sendSMSNotification(for analysis: TankAnalysis) async {
+        await MainActor.run {
+            smsStatus = .sending
+            withAnimation(.easeInOut(duration: 0.3)) {
+                showSMSBanner = true
+            }
+        }
+        
+        let status = await TwilioService.shared.sendTankAnalysisSMS(
+            analysis: analysis,
+            tankName: tank.name
+        )
+        
+        await MainActor.run {
+            smsStatus = status
+            
+            // Auto-hide banner after 4 seconds for success, 6 seconds for failure
+            let delay: Double = status.isSuccess ? 4.0 : 6.0
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showSMSBanner = false
                 }
             }
         }
@@ -1144,6 +1194,96 @@ struct ProductCard: View {
                 .fill(Color.white)
                 .shadow(color: Color.oceanBlue.opacity(0.08), radius: 10, x: 0, y: 5)
         )
+    }
+}
+
+// MARK: - SMS Status Banner
+struct SMSStatusBanner: View {
+    let status: SMSStatus
+    let onDismiss: () -> Void
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Status Icon
+            Group {
+                switch status {
+                case .idle:
+                    EmptyView()
+                case .sending:
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .scaleEffect(0.8)
+                case .success:
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.white)
+                        .font(.system(size: 20))
+                case .failure:
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.white)
+                        .font(.system(size: 20))
+                }
+            }
+            .frame(width: 24, height: 24)
+            
+            // Message
+            VStack(alignment: .leading, spacing: 2) {
+                Text(statusTitle)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                
+                Text(status.message)
+                    .font(.system(size: 12))
+                    .foregroundColor(.white.opacity(0.9))
+                    .lineLimit(1)
+            }
+            
+            Spacer()
+            
+            // Dismiss button (only for non-sending states)
+            if case .sending = status {
+                // No dismiss button while sending
+            } else {
+                Button(action: onDismiss) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.white.opacity(0.7))
+                        .font(.system(size: 18))
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(backgroundColor)
+                .shadow(color: backgroundColor.opacity(0.4), radius: 10, x: 0, y: 5)
+        )
+        .padding(.horizontal, 16)
+    }
+    
+    private var statusTitle: String {
+        switch status {
+        case .idle:
+            return ""
+        case .sending:
+            return "📱 Sending SMS..."
+        case .success:
+            return "✅ SMS Sent Successfully"
+        case .failure:
+            return "❌ SMS Failed"
+        }
+    }
+    
+    private var backgroundColor: Color {
+        switch status {
+        case .idle:
+            return .clear
+        case .sending:
+            return .oceanBlue
+        case .success:
+            return .aquaGreen
+        case .failure:
+            return .aquaRed
+        }
     }
 }
 

@@ -1,5 +1,7 @@
 # API Keys and sensitive configuration
 app/aqua/aqua/APIConfig.swift
+aqua/TwilioConfig.swift
+TwilioConfig.swift
 
 
 # Xcode
