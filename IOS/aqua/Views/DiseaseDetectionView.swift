@@ -14,6 +14,10 @@ struct DiseaseDetectionView: View {
     @State private var errorMessage: String?
     @State private var showResults = false
     @State private var showResultsSheet = false
+    
+    // SMS Notification States
+    @State private var smsStatus: SMSStatus = .idle
+    @State private var showSMSBanner = false
 
     var body: some View {
         ZStack {
@@ -120,6 +124,22 @@ struct DiseaseDetectionView: View {
                 })
                 .transition(.opacity)
             }
+            
+            // SMS Status Banner Overlay
+            if showSMSBanner {
+                VStack {
+                    SMSStatusBanner(status: smsStatus) {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            showSMSBanner = false
+                        }
+                    }
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .padding(.top, 60)
+                    
+                    Spacer()
+                }
+                .zIndex(100)
+            }
         }
         .sheet(isPresented: $showingImagePicker) {
             ImagePicker(selectedImage: $capturedImage, sourceType: .photoLibrary)
@@ -155,8 +175,37 @@ struct DiseaseDetectionView: View {
                 case .success(let diseaseResult):
                     predictionResult = diseaseResult
                     showResultsSheet = true
+                    
+                    // Send SMS notification after successful disease detection
+                    Task {
+                        await sendSMSNotification(for: diseaseResult)
+                    }
+                    
                 case .failure(let error):
                     errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+    
+    private func sendSMSNotification(for result: DiseaseResult) async {
+        await MainActor.run {
+            smsStatus = .sending
+            withAnimation(.easeInOut(duration: 0.3)) {
+                showSMSBanner = true
+            }
+        }
+        
+        let status = await TwilioService.shared.sendDiseaseDetectionSMS(result: result)
+        
+        await MainActor.run {
+            smsStatus = status
+            
+            // Auto-hide banner after 4 seconds for success, 6 seconds for failure
+            let delay: Double = status.isSuccess ? 4.0 : 6.0
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showSMSBanner = false
                 }
             }
         }
