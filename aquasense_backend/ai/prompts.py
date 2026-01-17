@@ -43,6 +43,77 @@ Please assess:
 Provide clear, actionable recommendations.
 """
 
+WATER_QUALITY_ML_ENHANCED_PROMPT = """
+You are an expert aquaculture water quality specialist analyzing data for farmers.
+
+## ML MODEL PREDICTION
+- Water Quality: {ml_prediction} ({ml_confidence:.1%} confidence)
+- Prediction Probabilities:
+  * Excellent: {prob_excellent:.1%}
+  * Good: {prob_good:.1%}
+  * Poor: {prob_poor:.1%}
+
+## ACTUAL WATER PARAMETERS
+Tank Species: {species}
+
+**Measured Parameters:**
+- Temperature (Temp): {temperature}°C
+- pH: {ph}
+- Dissolved Oxygen (DO_mg_L_): {dissolved_oxygen} mg/L
+- Turbidity (Turbidity__cm_): {turbidity} cm
+- Ammonia (Ammonia__mg_L_1__): {ammonia} mg/L
+- Nitrite (Nitrite__mg_L_1__): {nitrite} mg/L
+
+**Default Values Used (Not Measured):**
+- BOD (Biological Oxygen Demand): {bod} mg/L (default: 3.0)
+- CO2 (Carbon Dioxide): {co2} mg/L (default: 5.0)
+- Alkalinity: {alkalinity} mg/L (default: 100.0)
+- Hardness: {hardness} mg/L (default: 150.0)
+- Calcium: {calcium} mg/L (default: 60.0)
+- Phosphorus: {phosphorus} mg/L (default: 0.05)
+- H2S (Hydrogen Sulfide): {h2s} mg/L (default: 0.001)
+- Plankton Count: {plankton} No/L (default: 5000)
+
+{missing_note}
+
+## YOUR TASK
+Provide a comprehensive water quality analysis in the following JSON-like structure that matches the iOS TankAnalysis model:
+
+1. **OVERVIEW** (healthScore 0-100, status, summary, keyMetrics):
+   - Validate the ML prediction against actual MEASURED parameters
+   - Note: 8 parameters used defaults, so ML prediction should be interpreted cautiously
+   - Provide an overall health score and status (Excellent/Good/Needs Attention/Critical)
+   - Write a 2-3 sentence summary
+   - Include 2-4 key metrics in a dict
+
+2. **ALERTS** (Critical issues requiring immediate action):
+   - Focus on MEASURED parameters that are dangerous or outside safe ranges
+   - Each item needs: type, title, description, priority (critical/high), details, actionItems
+
+3. **MONITOR** (Parameters approaching concerning levels):
+   - List MEASURED parameters that should be watched closely
+   - Recommend measuring the parameters we used defaults for (BOD, CO2, Alkalinity, Hardness, Calcium, Phosphorus, H2S, Plankton)
+   - Each item needs: type, title, description, priority (medium), details, actionItems
+
+4. **GOOD** (Optimal conditions and positive indicators):
+   - List MEASURED parameters in ideal ranges
+   - Each item needs: type, title, description, priority (low), details, actionItems
+
+5. **SPOKEN SUMMARY** (3-4 sentences for text-to-speech):
+   - Audio-friendly summary focusing on most important findings
+   - Mention the ML prediction but note it's based partially on assumed default values
+   - State immediate actions if any
+
+Format your response clearly with section headers. Be specific about:
+- Which MEASURED parameters need attention and why
+- Species-specific considerations for {species}
+- Actionable steps with timelines (immediate/24-48h/long-term)
+- Acknowledge that ML prediction used 8 default values (BOD, CO2, Alkalinity, Hardness, Calcium, Phosphorus, H2S, Plankton)
+- Recommend measuring these additional parameters for more accurate future predictions
+
+IMPORTANT: Base your critical assessments ONLY on the 6 measured parameters. The ML prediction is useful but less reliable since it used 8 default values.
+"""
+
 TANK_RECOMMENDATION_PROMPT = """
 You are an expert aquaculture farm manager.
 

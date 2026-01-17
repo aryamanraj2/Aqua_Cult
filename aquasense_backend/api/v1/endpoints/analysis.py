@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import Optional
 import base64
+import logging
 
 from config.database import get_db
 from schemas.analysis import (
@@ -18,6 +19,7 @@ from schemas.analysis import (
 from services.analysis_service import AnalysisService
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/disease-detection", response_model=DiseaseDetectionResponse)
@@ -28,12 +30,21 @@ async def detect_disease(
     """
     Detect fish diseases from image and/or symptoms.
     """
+    logger.info("=" * 80)
+    logger.info("📱 DISEASE DETECTION REQUEST RECEIVED")
+    logger.info(f"Has image: {request.image_base64 is not None}")
+    logger.info(f"Has symptoms: {request.symptoms is not None}")
+    logger.info(f"Tank ID: {request.tank_id}")
+    logger.info("=" * 80)
+
     service = AnalysisService(db)
     result = await service.detect_disease(
         image_base64=request.image_base64,
         symptoms=request.symptoms,
         tank_id=request.tank_id
     )
+
+    logger.info(f"✅ Disease detection complete - {len(result.detected_diseases)} diseases detected")
     return result
 
 
@@ -69,34 +80,34 @@ async def detect_disease_ml_only(
     """
     from ml.disease_classifier import DiseaseClassifier
 
-    print("=" * 80)
-    print("ML-ONLY DISEASE DETECTION ENDPOINT CALLED (iOS App)")
-    print(f"Received file: {file.filename} ({file.content_type})")
+    logger.info("=" * 80)
+    logger.info("📱 ML-ONLY DISEASE DETECTION ENDPOINT CALLED (iOS App)")
+    logger.info(f"📁 Received file: {file.filename} ({file.content_type})")
 
     # Read and encode image
     image_bytes = await file.read()
     image_size_kb = len(image_bytes) / 1024
-    print(f"Image size: {image_size_kb:.2f} KB")
+    logger.info(f"📊 Image size: {image_size_kb:.2f} KB")
 
     image_base64 = base64.b64encode(image_bytes).decode('utf-8')
 
     # Get ML predictions only
-    print("STARTING ML MODEL PREDICTION...")
+    logger.info("🔮 STARTING ML MODEL PREDICTION...")
     classifier = DiseaseClassifier()
     predictions = await classifier.predict(image_base64)
 
     # Log predictions
-    print(f"ML MODEL RETURNED {len(predictions)} PREDICTIONS:")
+    logger.info(f"✨ ML MODEL RETURNED {len(predictions)} PREDICTIONS:")
     for disease in predictions:
-        print(f"  - {disease.name}: {disease.confidence:.2%}")
+        logger.info(f"  • {disease.name}: {disease.confidence:.2%}")
 
     if predictions:
         top_prediction = predictions[0]
-        print(f"TOP PREDICTION: {top_prediction.name} ({top_prediction.confidence:.2%})")
+        logger.info(f"🎯 TOP PREDICTION: {top_prediction.name} ({top_prediction.confidence:.2%})")
     else:
-        print("WARNING: NO PREDICTIONS RETURNED BY ML MODEL")
+        logger.warning("⚠️  WARNING: NO PREDICTIONS RETURNED BY ML MODEL")
 
-    print("=" * 80)
+    logger.info("=" * 80)
 
     return {
         "predictions": predictions,
@@ -137,6 +148,13 @@ async def get_tank_analysis(
     """
     Get quick tank analysis (water quality only).
     """
+    logger.info("\n" + "=" * 80)
+    logger.info("📱 TANK ANALYSIS REQUEST RECEIVED")
+    logger.info(f"🆔 Tank ID: {tank_id}")
+    logger.info(f"💧 Include Water Quality: True")
+    logger.info(f"🐟 Include Disease Check: False")
+    logger.info("=" * 80)
+
     service = AnalysisService(db)
     result = await service.analyze_tank(
         tank_id=tank_id,
@@ -145,10 +163,14 @@ async def get_tank_analysis(
     )
 
     if not result:
+        logger.error(f"❌ Tank not found: {tank_id}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Tank with id {tank_id} not found"
         )
+
+    logger.info(f"✅ Tank analysis complete - Health Score: {result.overall_health_score:.1f}/100")
+    logger.info("=" * 80 + "\n")
 
     return result
 

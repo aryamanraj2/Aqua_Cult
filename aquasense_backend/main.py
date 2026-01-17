@@ -1,6 +1,7 @@
 """
 AquaSense Backend - FastAPI Application Entry Point
 """
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -14,6 +15,15 @@ from models.tank import Tank
 from models.water_quality import WaterQuality
 from models.product import Product
 from models.order import Order
+
+# Configure logging to show in terminal
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(message)s',
+    handlers=[
+        logging.StreamHandler()  # Output to console/terminal
+    ]
+)
 
 
 @asynccontextmanager
@@ -80,5 +90,6 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=8000,
-        reload=True
+        reload=True,
+        log_level="info"
     )

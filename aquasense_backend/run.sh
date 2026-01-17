@@ -40,4 +40,4 @@ echo ""
 echo "Starting FastAPI server..."
 echo "API Docs will be available at: http://localhost:8000/docs"
 echo ""
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --reload --host 0.0.0.0 --port 8000 --log-level info
