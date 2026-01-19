@@ -10,6 +10,7 @@ from config.settings import settings
 from ai.prompts import (
     DISEASE_ANALYSIS_PROMPT,
     WATER_QUALITY_PROMPT,
+    WATER_QUALITY_ML_ENHANCED_PROMPT,
     TANK_RECOMMENDATION_PROMPT,
     VOICE_AGENT_PROMPT,
     GENERAL_RECOMMENDATION_PROMPT
@@ -105,6 +106,65 @@ class GeminiClient:
                 "recommendations": ["Please check parameters manually"],
                 "parameters": {}
             }
+
+    async def analyze_water_quality_with_ml(
+        self,
+        wq_reading: Any,
+        species: List[str],
+        ml_prediction: Dict[str, Any],
+        missing_note: str = ""
+    ) -> Dict[str, Any]:
+        """
+        Analyze water quality using ML prediction + Gemini interpretation.
+        Formats response to match iOS TankAnalysis.swift structure.
+        """
+        try:
+            # Get feature values from ml_prediction
+            features = ml_prediction['features_used']
+
+            prompt = WATER_QUALITY_ML_ENHANCED_PROMPT.format(
+                ml_prediction=ml_prediction['prediction'],
+                ml_confidence=ml_prediction['confidence'],
+                prob_excellent=ml_prediction['probabilities']['Excellent'],
+                prob_good=ml_prediction['probabilities']['Good'],
+                prob_poor=ml_prediction['probabilities']['Poor'],
+                species=", ".join(species),
+                # Measured parameters
+                temperature=features['Temp'],
+                ph=features['pH'],
+                dissolved_oxygen=features['DO_mg_L_'],
+                turbidity=features['Turbidity__cm_'],
+                ammonia=features['Ammonia__mg_L_1__'],
+                nitrite=features['Nitrite__mg_L_1__'],
+                # Default values (always used)
+                bod=features['BOD__mg_L_'],
+                co2=features['CO2'],
+                alkalinity=features['Alkalinity__mg_L_1__'],
+                hardness=features['Hardness__mg_L_1__'],
+                calcium=features['Calcium__mg_L_1__'],
+                phosphorus=features['Phosphorus__mg_L_1__'],
+                h2s=features['H2S__mg_L_1__'],
+                plankton=features['Plankton__No__L_1_'],
+                missing_note=missing_note
+            )
+
+            response = self.model.generate_content(
+                prompt,
+                generation_config=self.generation_config
+            )
+
+            # Parse response to match TankAnalysis structure
+            result = self._parse_water_quality_response(response.text, wq_reading)
+
+            # Add ML prediction metadata
+            result['ml_prediction'] = ml_prediction
+
+            return result
+
+        except Exception as e:
+            logger.error(f"Error in ML-enhanced water quality analysis: {str(e)}")
+            # Fallback to original method
+            return await self.analyze_water_quality(wq_reading, species)
 
     async def get_tank_recommendations(
         self,

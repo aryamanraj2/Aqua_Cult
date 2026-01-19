@@ -47,6 +47,7 @@ class WaterQualityAnalysis(BaseModel):
     issues: List[str]
     recommendations: List[str]
     parameters: Dict[str, Dict[str, Any]]  # parameter_name: {value, status, optimal_range}
+    ml_prediction: Optional[Dict[str, Any]] = None  # ML prediction details
 
 
 class TankAnalysisResponse(BaseModel):

@@ -8,6 +8,7 @@ from datetime import datetime
 from services.tank_service import TankService
 from ai.gemini_client import GeminiClient
 from ml.disease_classifier import DiseaseClassifier
+from ml.water_quality_predictor import WaterQualityPredictor
 from schemas.analysis import (
     DiseaseInfo,
     DiseaseDetectionResponse,
@@ -25,6 +26,7 @@ class AnalysisService:
         self.tank_service = TankService(db)
         self.gemini_client = GeminiClient()
         self.disease_classifier = DiseaseClassifier()
+        self.water_quality_predictor = WaterQualityPredictor()
 
     async def detect_disease(
         self,
@@ -38,18 +40,32 @@ class AnalysisService:
         import logging
         logger = logging.getLogger(__name__)
 
+        logger.info("\n" + "🔬" * 40)
+        logger.info("🦠 DISEASE DETECTION SERVICE STARTED")
+        logger.info(f"📸 Has Image: {image_base64 is not None}")
+        logger.info(f"📝 Has Symptoms: {symptoms is not None}")
+        logger.info(f"🏊 Tank ID: {tank_id}")
+        logger.info("🔬" * 40)
+
         detected_diseases = []
 
         # Use ML model if image is provided
         if image_base64:
-            print("=" * 80)
-            print("STARTING ML DISEASE PREDICTION...")
-            ml_result = await self.disease_classifier.predict(image_base64)
-            print(f"ML MODEL RETURNED {len(ml_result)} PREDICTIONS:")
-            for disease in ml_result:
-                print(f"  - {disease.name}: {disease.confidence:.2%}")
-            print("=" * 80)
-            detected_diseases.extend(ml_result)
+            logger.info("\n📍 STEP 1: Running ML Disease Model...")
+            logger.info(f"Image size: {len(image_base64)} characters (base64)")
+
+            try:
+                ml_result = await self.disease_classifier.predict(image_base64)
+                logger.info(f"✅ ML MODEL RETURNED {len(ml_result)} PREDICTIONS:")
+                for disease in ml_result:
+                    logger.info(f"  • {disease.name}: {disease.confidence:.2%}")
+                detected_diseases.extend(ml_result)
+            except Exception as e:
+                logger.error(f"❌ ML model prediction failed: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
+        else:
+            logger.info("\n📍 STEP 1: Skipping ML model (no image provided)")
 
         # Use Gemini AI for comprehensive analysis
         context = {}
@@ -58,26 +74,35 @@ class AnalysisService:
             if tank:
                 context["tank_name"] = tank.name
                 context["species"] = tank.species
+                logger.info(f"\n🏊 Tank Context: {tank.name} (Species: {tank.species})")
 
-        print("STARTING GEMINI AI ANALYSIS...")
-        ai_analysis = await self.gemini_client.analyze_disease(
-            image_base64=image_base64,
-            symptoms=symptoms,
-            context=context
-        )
-        print(f"GEMINI AI RETURNED: {ai_analysis}")
-        print("=" * 80)
+        logger.info("\n📍 STEP 2: Calling Gemini AI for analysis...")
+        try:
+            ai_analysis = await self.gemini_client.analyze_disease(
+                image_base64=image_base64,
+                symptoms=symptoms,
+                context=context
+            )
+            logger.info(f"✅ GEMINI AI ANALYSIS COMPLETE")
+            logger.info(f"Recommendation: {ai_analysis.get('recommendation', 'None')[:100]}...")
 
-        # Merge ML and AI results
-        if ai_analysis.get("diseases"):
-            print(f"Adding {len(ai_analysis.get('diseases'))} diseases from Gemini")
-            detected_diseases.extend(ai_analysis["diseases"])
+            # Merge ML and AI results
+            if ai_analysis.get("diseases"):
+                logger.info(f"Adding {len(ai_analysis.get('diseases'))} diseases from Gemini")
+                detected_diseases.extend(ai_analysis["diseases"])
+        except Exception as e:
+            logger.error(f"❌ Gemini AI analysis failed: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
 
         # Determine severity
         severity = self._calculate_severity(detected_diseases)
 
-        print(f"FINAL RESULT: {len(detected_diseases)} diseases, severity: {severity}")
-        print("=" * 80)
+        logger.info("\n" + "=" * 80)
+        logger.info("✨ DISEASE DETECTION COMPLETE")
+        logger.info(f"📊 Total Diseases Detected: {len(detected_diseases)}")
+        logger.info(f"⚠️  Severity: {severity.upper()}")
+        logger.info("=" * 80 + "\n")
 
         return DiseaseDetectionResponse(
             detected_diseases=detected_diseases,
@@ -97,9 +122,24 @@ class AnalysisService:
         """
         Perform comprehensive tank analysis.
         """
+        import logging
+        logger = logging.getLogger(__name__)
+
+        logger.info("\n" + "🐟" * 40)
+        logger.info("🏊 TANK ANALYSIS SERVICE STARTED")
+        logger.info(f"🆔 Tank ID: {tank_id}")
+        logger.info(f"💧 Include Water Quality: {include_water_quality}")
+        logger.info(f"🦠 Include Disease Check: {include_disease_check}")
+        logger.info("🐟" * 40)
+
         tank = self.tank_service.get_tank_by_id(tank_id)
         if not tank:
+            logger.error(f"❌ Tank not found: {tank_id}")
             return None
+
+        logger.info(f"✅ Tank found: {tank.name}")
+        logger.info(f"🐠 Species: {tank.species}")
+        logger.info(f"📏 Capacity: {tank.capacity}L, Current Stock: {tank.current_stock}")
 
         water_quality_analysis = None
         disease_detection = None
@@ -108,12 +148,26 @@ class AnalysisService:
 
         # Analyze water quality
         if include_water_quality:
+            logger.info("\n📍 Checking for water quality data...")
             latest_wq = self.tank_service.get_latest_water_quality(tank_id)
+
             if latest_wq:
+                logger.info("✅ Water quality reading found!")
+                logger.info(f"   • Temperature: {latest_wq.temperature}°C")
+                logger.info(f"   • pH: {latest_wq.ph}")
+                logger.info(f"   • DO: {latest_wq.dissolved_oxygen} mg/L")
+                logger.info(f"   • Turbidity: {latest_wq.turbidity} cm")
+                logger.info(f"   • Ammonia: {latest_wq.ammonia} mg/L")
+                logger.info(f"   • Nitrite: {latest_wq.nitrite} mg/L")
+
                 water_quality_analysis = await self._analyze_water_quality(latest_wq, tank.species)
                 if water_quality_analysis.status in ["poor", "critical"]:
                     alerts.extend(water_quality_analysis.issues)
             else:
+                logger.warning("⚠️  NO WATER QUALITY DATA FOUND IN DATABASE!")
+                logger.warning("   The tank has no water quality readings.")
+                logger.warning("   ML water quality model will NOT be called.")
+                logger.warning("   Please add water quality readings to the tank.")
                 alerts.append("No water quality data available. Please add readings.")
 
         # Analyze for diseases
@@ -171,19 +225,72 @@ class AnalysisService:
 
     async def _analyze_water_quality(self, wq_reading, species: List[str]) -> WaterQualityAnalysis:
         """
-        Analyze water quality parameters against optimal ranges.
+        Analyze water quality parameters using ML model + Gemini AI.
         """
-        # Use Gemini to analyze water quality
-        analysis = await self.gemini_client.analyze_water_quality(
-            wq_reading=wq_reading,
-            species=species
-        )
+        import logging
+        logger = logging.getLogger(__name__)
+
+        logger.info("\n" + "🌊" * 40)
+        logger.info("🔬 STARTING WATER QUALITY ANALYSIS")
+        logger.info(f"🐟 Species: {', '.join(species)}")
+        logger.info("🌊" * 40)
+
+        # Step 1: Get ML prediction
+        logger.info("\n📍 STEP 1: Calling ML Water Quality Model...")
+        ml_prediction = await self.water_quality_predictor.predict(wq_reading)
+
+        # Step 2: Use ML-enhanced analysis or fallback
+        if ml_prediction:
+            # Format missing parameters note
+            missing = ml_prediction['missing_features']
+            # Separate always-default vs. optionally-measured
+            always_default = ['BOD', 'CO2', 'Alkalinity', 'Hardness', 'Calcium', 'Phosphorus', 'H2S', 'Plankton']
+            not_measured = [m for m in missing if m not in always_default]
+
+            missing_note = "\nIMPORTANT: This ML prediction used default values for parameters not tracked in your tank system:"
+            missing_note += f"\n- Always defaults: {', '.join(always_default)}"
+            if not_measured:
+                missing_note += f"\n- Not measured this time: {', '.join(not_measured)}"
+            missing_note += "\n\nFor more accurate ML predictions, consider adding sensors for BOD, CO2, Alkalinity, Hardness, Calcium, Phosphorus, H2S, and Plankton count."
+
+            # Send ML prediction + raw parameters to Gemini
+            logger.info("\n📍 STEP 2: Sending ML prediction to Gemini AI for validation...")
+            logger.info(f"🤖 ML Prediction: {ml_prediction['prediction']} ({ml_prediction['confidence']:.2%} confidence)")
+            logger.info("🧠 Gemini AI will validate this prediction against measured parameters...")
+
+            analysis = await self.gemini_client.analyze_water_quality_with_ml(
+                wq_reading=wq_reading,
+                species=species,
+                ml_prediction=ml_prediction,
+                missing_note=missing_note
+            )
+
+            logger.info("\n✅ ML-Enhanced Analysis Complete!")
+            logger.info(f"📊 Final Status: {analysis.get('status', 'unknown')}")
+
+        else:
+            # Fallback to Gemini-only analysis if ML fails
+            logger.warning("\n⚠️  ML prediction failed, using Gemini-only analysis")
+            logger.warning("📍 STEP 2: Using standard Gemini AI analysis (no ML prediction)")
+
+            analysis = await self.gemini_client.analyze_water_quality(
+                wq_reading=wq_reading,
+                species=species
+            )
+
+            logger.info("\n✅ Gemini-Only Analysis Complete!")
+            logger.info(f"📊 Final Status: {analysis.get('status', 'unknown')}")
+
+        logger.info("\n" + "🌊" * 40)
+        logger.info("✨ WATER QUALITY ANALYSIS FINISHED")
+        logger.info("🌊" * 40 + "\n")
 
         return WaterQualityAnalysis(
             status=analysis.get("status", "unknown"),
             issues=analysis.get("issues", []),
             recommendations=analysis.get("recommendations", []),
-            parameters=analysis.get("parameters", {})
+            parameters=analysis.get("parameters", {}),
+            ml_prediction=analysis.get("ml_prediction")
         )
 
     def _calculate_severity(self, diseases: List[DiseaseInfo]) -> str:
