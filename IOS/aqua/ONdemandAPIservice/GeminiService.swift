@@ -423,3 +423,6 @@ enum GeminiError: LocalizedError {
     }
   }
 }
+
+
+
